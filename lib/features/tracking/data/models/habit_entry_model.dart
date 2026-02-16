@@ -5,15 +5,19 @@ part 'habit_entry_model.g.dart';
 
 @HiveType(typeId: 1)
 class HabitEntryModel extends HabitEntry {
+  @override
   @HiveField(0)
   final String id;
   
+  @override
   @HiveField(1)
   final String habitId;
   
+  @override
   @HiveField(2)
   final DateTime date;
   
+  @override
   @HiveField(3)
   final bool isCompleted;
 
@@ -70,6 +74,7 @@ class HabitEntryModel extends HabitEntry {
   }
 
   /// Copy with
+  @override
   HabitEntryModel copyWith({
     String? id,
     String? habitId,

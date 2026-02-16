@@ -29,6 +29,11 @@ import '../../features/profile/domain/repositories/profile_repository.dart';
 import '../../features/profile/domain/usecases/get_profile.dart';
 import '../../features/profile/domain/usecases/update_profile.dart';
 
+// Presentation (BLoCs)
+import '../../features/habits/presentation/bloc/habit_bloc.dart';
+import '../../features/tracking/presentation/bloc/tracking_bloc.dart';
+import '../../features/profile/presentation/bloc/profile_bloc.dart';
+
 final getIt = GetIt.instance;
 
 /// Setup all dependencies
@@ -88,10 +93,33 @@ Future<void> setupDependencies() async {
   getIt.registerLazySingleton(() => GetProfile(getIt()));
   getIt.registerLazySingleton(() => UpdateProfile(getIt()));
 
-  // ========== BLOCS (will be added later) ==========
-  // getIt.registerFactory(() => HabitBloc(...));
-  // getIt.registerFactory(() => TrackingBloc(...));
-  // getIt.registerFactory(() => ProfileBloc(...));
+  // ========== BLOCS ==========
+  getIt.registerFactory(
+    () => HabitBloc(
+      createHabit: getIt(),
+      getAllHabits: getIt(),
+      getActiveHabits: getIt(),
+      updateHabit: getIt(),
+      deleteHabit: getIt(),
+    ),
+  );
+
+  getIt.registerFactory(
+    () => TrackingBloc(
+      toggleHabitCompletion: getIt(),
+      getDailyEntries: getIt(),
+      calculateStreak: getIt(),
+      getDailyProgress: getIt(),
+      getActiveHabits: getIt(),
+    ),
+  );
+
+  getIt.registerFactory(
+    () => ProfileBloc(
+      getProfile: getIt(),
+      updateProfile: getIt(),
+    ),
+  );
 }
 
 /// Reset all dependencies (for testing)

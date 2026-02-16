@@ -6,12 +6,11 @@
 // tree, read text, and verify that the values of widget properties are correct.
 
 import 'package:flutter_test/flutter_test.dart';
-
-import 'package:habit_tracker/app.dart';
+import 'package:habit_tracker/main.dart';
 
 void main() {
   testWidgets('Renders habits page', (WidgetTester tester) async {
-    await tester.pumpWidget(const HabitTrackerApp());
+    await tester.pumpWidget(const MyApp());
     await tester.pumpAndSettle();
 
     expect(find.text('Your Habits'), findsOneWidget);

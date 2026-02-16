@@ -5,9 +5,11 @@ part 'user_profile_model.g.dart';
 
 @HiveType(typeId: 2)
 class UserProfileModel extends UserProfile {
+  @override
   @HiveField(0)
   final String name;
   
+  @override
   @HiveField(1)
   final DateTime? joinDate;
 
@@ -54,6 +56,7 @@ class UserProfileModel extends UserProfile {
   }
 
   /// Copy with
+  @override
   UserProfileModel copyWith({
     String? name,
     DateTime? joinDate,
