@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 
 class AppColors {
   // Background Colors
-  static const Color background = Color(0xFF1E1E1E);
+  static const Color background = Color(0xFF1A1A1A); // Slightly darker
   static const Color cardBackground = Color(0xFF2A2A2A);
   static const Color surfaceVariant = Color(0xFF333333);
 
@@ -16,19 +16,19 @@ class AppColors {
   static const Color textSecondary = Color(0xFF9CA3AF);
   static const Color textTertiary = Color(0xFF6B7280);
 
-  // Habit Colors (from your screenshot)
+  // Status Colors
+  static const Color success = Color(0xFF10B981); // Green for completed
+  static const Color warning = Color(0xFFF59E0B);
+  static const Color error = Color(0xFFEF4444);
+  static const Color info = Color(0xFF3B82F6);
+
+  // Habit Colors
   static const Color yogaGreen = Color(0xFF10B981);
   static const Color waterBlue = Color(0xFF3B82F6);
   static const Color readOrange = Color(0xFFF59E0B);
   static const Color gymRed = Color(0xFFEF4444);
   static const Color meditationPurple = Color(0xFF8B5CF6);
   static const Color walkYellow = Color(0xFFFBBF24);
-
-  // Status Colors
-  static const Color success = Color(0xFF10B981);
-  static const Color warning = Color(0xFFF59E0B);
-  static const Color error = Color(0xFFEF4444);
-  static const Color info = Color(0xFF3B82F6);
 
   // UI Element Colors
   static const Color divider = Color(0xFF374151);
@@ -41,7 +41,7 @@ class AppColors {
     Color(0xFF8B5CF6),
   ];
 
-  // Habit Color Palette (for user selection)
+  // Habit Color Palette
   static const List<Color> habitColors = [
     yogaGreen,
     waterBlue,
@@ -53,22 +53,7 @@ class AppColors {
     Color(0xFF14B8A6), // Teal
   ];
 
-  // Get color by index (safe access)
   static Color getHabitColor(int index) {
     return habitColors[index % habitColors.length];
-  }
-
-  // Convert color to hex string
-  static String colorToHex(Color color) {
-    return '#${color.value.toRadixString(16).padLeft(8, '0').substring(2)}';
-  }
-
-  // Convert hex string to color
-  static Color hexToColor(String hex) {
-    hex = hex.replaceAll('#', '');
-    if (hex.length == 6) {
-      hex = 'FF$hex';
-    }
-    return Color(int.parse(hex, radix: 16));
   }
 }

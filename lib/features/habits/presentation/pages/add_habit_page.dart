@@ -8,9 +8,9 @@ import '../bloc/habit_event.dart';
 import '../bloc/habit_state.dart';
 
 class AddHabitPage extends StatefulWidget {
-  final Habit? habit; // For editing existing habit
+  final Habit? habit; 
 
-  const AddHabitPage({Key? key, this.habit}) : super(key: key);
+  const AddHabitPage({super.key, this.habit});
 
   @override
   State<AddHabitPage> createState() => _AddHabitPageState();

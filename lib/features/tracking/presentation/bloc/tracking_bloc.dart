@@ -111,8 +111,7 @@ class TrackingBloc extends Bloc<TrackingEvent, TrackingState> {
     result.fold(
       (failure) => emit(TrackingError(failure.message)),
       (entry) {
-        emit(HabitCompletionToggled(entry));
-        // Reload tracking data
+        // Immediately reload tracking to update progress
         add(LoadDateTrackingEvent(event.date));
       },
     );
@@ -122,7 +121,6 @@ class TrackingBloc extends Bloc<TrackingEvent, TrackingState> {
     RefreshTrackingEvent event,
     Emitter<TrackingState> emit,
   ) async {
-    // Don't show loading for refresh
     await _loadTrackingForDate(DateTime.now(), emit);
   }
 }

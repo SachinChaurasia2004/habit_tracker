@@ -1,7 +1,4 @@
 import 'package:equatable/equatable.dart';
-
-/// Base class for all failures in the application
-/// Failures represent business logic errors that are expected and recoverable
 abstract class Failure extends Equatable {
   final String message;
 

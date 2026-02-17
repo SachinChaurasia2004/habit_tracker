@@ -1,6 +1,7 @@
 import 'package:dartz/dartz.dart';
 import '../../../../core/error/exceptions.dart';
 import '../../../../core/error/failures.dart';
+import '../../../habits/domain/repositories/habit_repository.dart';
 import '../../domain/entities/habit_entry.dart';
 import '../../domain/repositories/tracking_repository.dart';
 import '../datasources/tracking_local_datasource.dart';
@@ -8,8 +9,12 @@ import '../models/habit_entry_model.dart';
 
 class TrackingRepositoryImpl implements TrackingRepository {
   final TrackingLocalDataSource localDataSource;
+  final HabitRepository habitRepository;
 
-  TrackingRepositoryImpl({required this.localDataSource});
+  TrackingRepositoryImpl({
+    required this.localDataSource,
+    required this.habitRepository,
+    });
 
   @override
   Future<Either<Failure, HabitEntry>> createEntry(HabitEntry entry) async {
@@ -214,23 +219,32 @@ class TrackingRepositoryImpl implements TrackingRepository {
     }
   }
 
-  @override
+   @override
   Future<Either<Failure, double>> getDailyCompletionPercentage(
     DateTime date,
   ) async {
     try {
-      // This requires access to habits to count total active habits
-      // For now, we'll get entries and calculate based on that
-      // In a real implementation, you'd inject HabitRepository here
+      // Get active habits count
+      final habitsResult = await habitRepository.getActiveHabits();
       
-      final models = await localDataSource.getEntriesForDate(date);
+      if (habitsResult.isLeft()) {
+        return const Right(0.0);
+      }
       
-      if (models.isEmpty) {
+      final activeHabits = habitsResult.fold((l) => [], (r) => r);
+      
+      if (activeHabits.isEmpty) {
         return const Right(0.0);
       }
 
+      // Get entries for today
+      final models = await localDataSource.getEntriesForDate(date);
+      
+      // Count completed entries
       final completedCount = models.where((m) => m.isCompleted).length;
-      final percentage = (completedCount / models.length) * 100;
+      
+      // Calculate percentage
+      final percentage = (completedCount / activeHabits.length) * 100;
       
       return Right(percentage);
     } on CacheException catch (e) {

@@ -1,6 +1,5 @@
 import 'package:get_it/get_it.dart';
 import 'package:hive/hive.dart';
-
 // Data
 import '../../features/habits/data/datasources/habit_local_datasource.dart';
 import '../../features/habits/data/models/habit_model.dart';
@@ -8,10 +7,6 @@ import '../../features/habits/data/repositories/habit_repository_impl.dart';
 import '../../features/tracking/data/datasources/tracking_local_datasource.dart';
 import '../../features/tracking/data/models/habit_entry_model.dart';
 import '../../features/tracking/data/repositories/tracking_repository_impl.dart';
-import '../../features/profile/data/datasources/profile_local_datasource.dart';
-import '../../features/profile/data/models/user_profile_model.dart';
-import '../../features/profile/data/repositories/profile_repository_impl.dart';
-
 // Domain
 import '../../features/habits/domain/repositories/habit_repository.dart';
 import '../../features/habits/domain/usecases/create_habit.dart';
@@ -25,14 +20,9 @@ import '../../features/tracking/domain/usecases/get_daily_entries.dart';
 import '../../features/tracking/domain/usecases/calculate_streak.dart';
 import '../../features/tracking/domain/usecases/get_daily_progress.dart';
 import '../../features/tracking/domain/usecases/get_entries_for_habit.dart';
-import '../../features/profile/domain/repositories/profile_repository.dart';
-import '../../features/profile/domain/usecases/get_profile.dart';
-import '../../features/profile/domain/usecases/update_profile.dart';
-
 // Presentation (BLoCs)
 import '../../features/habits/presentation/bloc/habit_bloc.dart';
 import '../../features/tracking/presentation/bloc/tracking_bloc.dart';
-import '../../features/profile/presentation/bloc/profile_bloc.dart';
 
 final getIt = GetIt.instance;
 
@@ -46,9 +36,6 @@ Future<void> setupDependencies() async {
   getIt.registerLazySingleton<Box<HabitEntryModel>>(
     () => Hive.box<HabitEntryModel>('entries'),
   );
-  getIt.registerLazySingleton<Box<UserProfileModel>>(
-    () => Hive.box<UserProfileModel>('profile'),
-  );
 
   // ========== DATA SOURCES ==========
   getIt.registerLazySingleton<HabitLocalDataSource>(
@@ -57,20 +44,18 @@ Future<void> setupDependencies() async {
   getIt.registerLazySingleton<TrackingLocalDataSource>(
     () => TrackingLocalDataSourceImpl(getIt()),
   );
-  getIt.registerLazySingleton<ProfileLocalDataSource>(
-    () => ProfileLocalDataSourceImpl(getIt()),
-  );
 
-  // ========== REPOSITORIES ==========
-  getIt.registerLazySingleton<HabitRepository>(
-    () => HabitRepositoryImpl(localDataSource: getIt()),
-  );
-  getIt.registerLazySingleton<TrackingRepository>(
-    () => TrackingRepositoryImpl(localDataSource: getIt()),
-  );
-  getIt.registerLazySingleton<ProfileRepository>(
-    () => ProfileRepositoryImpl(localDataSource: getIt()),
-  );
+// ========== REPOSITORIES ==========
+getIt.registerLazySingleton<HabitRepository>(
+  () => HabitRepositoryImpl(localDataSource: getIt()),
+);
+
+getIt.registerLazySingleton<TrackingRepository>(
+  () => TrackingRepositoryImpl(
+    localDataSource: getIt(),
+    habitRepository: getIt(), // ADD THIS
+  ),
+);
 
   // ========== USE CASES - HABITS ==========
   getIt.registerLazySingleton(() => CreateHabit(getIt()));
@@ -89,9 +74,6 @@ Future<void> setupDependencies() async {
   getIt.registerLazySingleton(() => GetDailyProgress(getIt()));
   getIt.registerLazySingleton(() => GetEntriesForHabit(getIt()));
 
-  // ========== USE CASES - PROFILE ==========
-  getIt.registerLazySingleton(() => GetProfile(getIt()));
-  getIt.registerLazySingleton(() => UpdateProfile(getIt()));
 
   // ========== BLOCS ==========
   getIt.registerFactory(
@@ -114,12 +96,6 @@ Future<void> setupDependencies() async {
     ),
   );
 
-  getIt.registerFactory(
-    () => ProfileBloc(
-      getProfile: getIt(),
-      updateProfile: getIt(),
-    ),
-  );
 }
 
 /// Reset all dependencies (for testing)
