@@ -16,7 +16,6 @@ class HiveSetup {
     // Open boxes
     await Hive.openBox<HabitModel>(AppConstants.habitsBoxName);
     await Hive.openBox<HabitEntryModel>(AppConstants.entriesBoxName);
-
   }
 
   /// Get habits box
@@ -42,17 +41,13 @@ class HiveSetup {
 
   /// Get database size
   static Future<Map<String, int>> getDatabaseStats() async {
-    return {
-      'habits': habitsBox.length,
-      'entries': entriesBox.length,
-    };
+    return {'habits': habitsBox.length, 'entries': entriesBox.length};
   }
 
   /// Check if database is initialized
   static bool get isInitialized {
     return Hive.isBoxOpen(AppConstants.habitsBoxName) &&
-        Hive.isBoxOpen(AppConstants.entriesBoxName) &&
-        Hive.isBoxOpen(AppConstants.profileBoxName);
+        Hive.isBoxOpen(AppConstants.entriesBoxName);
   }
 
   /// Backup data to JSON (for export)

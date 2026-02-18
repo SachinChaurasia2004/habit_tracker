@@ -1,12 +1,16 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/utils/date_helper.dart';
-import '../../../tracking/presentation/bloc/tracking_bloc.dart';
-import '../../../tracking/presentation/bloc/tracking_event.dart';
 
 class DateSelectorWidget extends StatefulWidget {
-  const DateSelectorWidget({super.key});
+  final DateTime currentDate;
+  final Function(DateTime) onDateChanged;
+
+  const DateSelectorWidget({
+    super.key,
+    required this.currentDate,
+    required this.onDateChanged,
+  });
 
   @override
   State<DateSelectorWidget> createState() => _DateSelectorWidgetState();
@@ -14,38 +18,55 @@ class DateSelectorWidget extends StatefulWidget {
 
 class _DateSelectorWidgetState extends State<DateSelectorWidget> {
   late List<DateTime> weekDates;
-  late DateTime selectedDate;
 
   @override
   void initState() {
     super.initState();
+    _updateWeekDates();
+  }
+
+  @override
+  void didUpdateWidget(DateSelectorWidget oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.currentDate != widget.currentDate) {
+      _updateWeekDates();
+    }
+  }
+
+  void _updateWeekDates() {
     weekDates = DateHelper.getCurrentWeek();
-    selectedDate = DateHelper.normalize(DateTime.now());
   }
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(vertical: 8),
-      margin: const EdgeInsets.symmetric(horizontal: 20),
+    return SingleChildScrollView(
+      scrollDirection: Axis.horizontal,
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
       child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: weekDates.map((date) {
-          final isSelected = DateHelper.isSameDay(date, selectedDate);
+          final isSelected = DateHelper.isSameDay(date, widget.currentDate);
           final isToday = DateHelper.isToday(date);
+          final isFuture = date.isAfter(DateHelper.normalize(DateTime.now()));
           final dayName = DateHelper.getDayOfWeekShort(date);
 
           return GestureDetector(
             onTap: () {
-              setState(() => selectedDate = date);
-              context.read<TrackingBloc>().add(LoadDateTrackingEvent(date));
+              if (isFuture) {
+                _showFutureDateMessage(context);
+              } else {
+                widget.onDateChanged(date);
+              }
             },
             child: Container(
-              width: 48,
+              width: 72,
+              margin: const EdgeInsets.only(right: 8),
               padding: const EdgeInsets.symmetric(vertical: 12),
               decoration: BoxDecoration(
-                color: isSelected ? AppColors.primary : Colors.transparent,
-                borderRadius: BorderRadius.circular(12),
+                color: isSelected
+                    ? AppColors.primary
+                    : AppColors.cardBackground,
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: AppColors.cardBackground, width: 1),
               ),
               child: Column(
                 children: [
@@ -68,8 +89,8 @@ class _DateSelectorWidgetState extends State<DateSelectorWidget> {
                       color: isSelected
                           ? Colors.white
                           : isToday
-                              ? AppColors.primary
-                              : Colors.white,
+                          ? AppColors.primary
+                          : AppColors.textSecondary,
                     ),
                   ),
                 ],
@@ -77,6 +98,18 @@ class _DateSelectorWidgetState extends State<DateSelectorWidget> {
             ),
           );
         }).toList(),
+      ),
+    );
+  }
+
+  void _showFutureDateMessage(BuildContext context) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: const Text('future date'),
+        backgroundColor: AppColors.surfaceVariant,
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+        duration: const Duration(seconds: 2),
       ),
     );
   }

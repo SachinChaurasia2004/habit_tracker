@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:habit_tracker/core/utils/app_constants.dart';
 import '../../../../core/theme/app_colors.dart';
+import '../../../../core/utils/date_helper.dart';
 import '../../../tracking/presentation/bloc/tracking_bloc.dart';
 import '../../../tracking/presentation/bloc/tracking_event.dart';
 import '../../../tracking/presentation/bloc/tracking_state.dart';
@@ -21,15 +22,25 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
+  late DateTime _currentDate ;
   @override
   void initState() {
     super.initState();
+    _currentDate = DateHelper.normalize(DateTime.now());
     _loadData();
   }
 
   void _loadData() {
     context.read<HabitBloc>().add(const LoadActiveHabitsEvent());
-    context.read<TrackingBloc>().add(const LoadTodayTrackingEvent());
+    context.read<TrackingBloc>().add(LoadDateTrackingEvent(_currentDate));
+  }
+
+  void _onDateChanged(DateTime newDate) {
+    setState(() {
+      _currentDate = DateHelper.normalize(newDate);
+    });
+    // Load tracking for the new date
+    context.read<TrackingBloc>().add(LoadDateTrackingEvent(newDate));
   }
 
   @override
@@ -49,7 +60,7 @@ class _HomePageState extends State<HomePage> {
                   state is HabitDeleted) {
                 // Refresh tracking data
                 context.read<TrackingBloc>().add(
-                  const LoadTodayTrackingEvent(),
+                  LoadDateTrackingEvent(_currentDate),
                 );
               }
             },
@@ -102,7 +113,10 @@ class _HomePageState extends State<HomePage> {
                 ),
 
                 // Date Selector
-                const SliverToBoxAdapter(child: DateSelectorWidget()),
+                SliverToBoxAdapter(child: DateSelectorWidget(
+                  currentDate: _currentDate,
+                  onDateChanged: _onDateChanged,
+                )),
 
                 // Daily Goals Card
                 SliverToBoxAdapter(
@@ -187,9 +201,11 @@ class _HomePageState extends State<HomePage> {
                 SliverToBoxAdapter(
                   child: Padding(
                     padding: const EdgeInsets.fromLTRB(20, 0, 20, 12),
-                    child: const Text(
-                      'Today\'s Habits',
-                      style: TextStyle(
+                    child: Text(
+                      _currentDate.isAtSameMomentAs(DateTime.now()) 
+                              ? 'Today\'s Habits'
+                              : DateHelper.formatRelative(_currentDate),
+                      style: const TextStyle(
                         fontSize: 20,
                         fontWeight: FontWeight.bold,
                         color: Colors.white,
@@ -259,7 +275,10 @@ class _HomePageState extends State<HomePage> {
                           Map<String, bool> completionStatus = {};
 
                           if (trackingState is TrackingLoaded) {
+                            // Streaks are calculated for ALL habits
                             streaks = trackingState.streaks;
+
+                            // Completion status only for habits with entries today
                             for (final habit in habitState.habits) {
                               completionStatus[habit.id] = trackingState
                                   .isHabitCompleted(habit.id);
@@ -276,9 +295,12 @@ class _HomePageState extends State<HomePage> {
                                 final habit = habitState.habits[index];
                                 return HabitCardWidget(
                                   habit: habit,
-                                  streak: streaks[habit.id] ?? 0,
+                                  streak:
+                                      streaks[habit.id] ??
+                                      0, // Show 0 if not found
                                   isCompleted:
                                       completionStatus[habit.id] ?? false,
+                                      date: _currentDate,
                                   onToggle: () {
                                     context.read<TrackingBloc>().add(
                                       ToggleHabitCompletionEvent(

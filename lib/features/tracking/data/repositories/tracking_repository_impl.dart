@@ -182,42 +182,64 @@ class TrackingRepositoryImpl implements TrackingRepository {
     }
   }
 
-  @override
-  Future<Either<Failure, int>> calculateStreak(String habitId) async {
-    try {
-      final models = await localDataSource.getEntriesForHabit(habitId);
-      
-      // Sort by date descending (most recent first)
-      final sortedModels = models.toList()
-        ..sort((a, b) => b.date.compareTo(a.date));
+ @override
+Future<Either<Failure, int>> calculateStreak(String habitId) async {
+  try {
+    final models = await localDataSource.getEntriesForHabit(habitId);
+    
+    if (models.isEmpty) {
+      return const Right(0);
+    }
 
-      int streak = 0;
-      DateTime checkDate = DateTime.now();
-      checkDate = DateTime(checkDate.year, checkDate.month, checkDate.day);
-
-      for (final model in sortedModels) {
-        final entryDate = DateTime(
+    // Get today's normalized date
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+    
+    // Create a map of completed dates
+    final completedDates = <String, bool>{};
+    for (final model in models) {
+      if (model.isCompleted) {
+        final normalizedDate = DateTime(
           model.date.year,
           model.date.month,
           model.date.day,
         );
-
-        if (entryDate == checkDate && model.isCompleted) {
-          streak++;
-          checkDate = checkDate.subtract(const Duration(days: 1));
-        } else if (entryDate.isBefore(checkDate)) {
-          // Gap found, streak broken
-          break;
-        }
+        final dateKey = '${normalizedDate.year}-${normalizedDate.month.toString().padLeft(2, '0')}-${normalizedDate.day.toString().padLeft(2, '0')}';
+        completedDates[dateKey] = true;
       }
-
-      return Right(streak);
-    } on CacheException catch (e) {
-      return Left(CacheFailure(e.message));
-    } catch (e) {
-      return Left(UnexpectedFailure(e.toString()));
     }
+    
+    // Check if today is completed
+    final todayKey = '${today.year}-${today.month.toString().padLeft(2, '0')}-${today.day.toString().padLeft(2, '0')}';
+    final todayCompleted = completedDates.containsKey(todayKey) && completedDates[todayKey]!;
+    
+    // Start checking from today if completed, otherwise from yesterday
+    DateTime checkDate = todayCompleted ? today : today.subtract(const Duration(days: 1));
+    
+    // Count consecutive days
+    int streak = 0;
+    
+    // Check up to 365 days back (reasonable limit)
+    for (int i = 0; i < 365; i++) {
+      final dateKey = '${checkDate.year}-${checkDate.month.toString().padLeft(2, '0')}-${checkDate.day.toString().padLeft(2, '0')}';
+      
+      if (completedDates.containsKey(dateKey) && completedDates[dateKey]!) {
+        streak++;
+        // Move to previous day
+        checkDate = checkDate.subtract(const Duration(days: 1));
+      } else {
+        // Streak broken
+        break;
+      }
+    }
+    
+    return Right(streak);
+  } on CacheException catch (e) {
+    return Left(CacheFailure(e.message));
+  } catch (e) {
+    return Left(UnexpectedFailure(e.toString()));
   }
+}
 
    @override
   Future<Either<Failure, double>> getDailyCompletionPercentage(

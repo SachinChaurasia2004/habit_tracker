@@ -1,4 +1,5 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
+import '../../../habits/domain/entities/habit.dart';
 import '../../domain/entities/habit_entry.dart';
 import '../../domain/usecases/toggle_habit_completion.dart';
 import '../../domain/usecases/get_daily_entries.dart';
@@ -42,79 +43,73 @@ class TrackingBloc extends Bloc<TrackingEvent, TrackingState> {
     await _loadTrackingForDate(event.date, emit);
   }
 
-  Future<void> _loadTrackingForDate(
-    DateTime date,
-    Emitter<TrackingState> emit,
-  ) async {
-    emit(const TrackingLoading());
+ Future<void> _loadTrackingForDate(
+  DateTime date,
+  Emitter<TrackingState> emit,
+) async {
+  emit(const TrackingLoading());
 
-    // Get active habits
-    final habitsResult = await getActiveHabits();
-    if (habitsResult.isLeft()) {
-      emit(TrackingError(
-        habitsResult.fold((l) => l.message, (r) => ''),
-      ));
-      return;
-    }
-
-    final habits = habitsResult.fold((l) => [], (r) => r);
-
-    // Get daily entries
-    final entriesResult = await getDailyEntries(
-      GetDailyEntriesParams(date: date),
-    );
-
-    if (entriesResult.isLeft()) {
-      emit(TrackingError(
-        entriesResult.fold((l) => l.message, (r) => ''),
-      ));
-      return;
-    }
-
-    final entries = entriesResult.fold<List<HabitEntry>>((l) => const [], (r) => r);
-
-    // Get daily progress
-    final progressResult = await getDailyProgress(
-      GetDailyProgressParams(date: date),
-    );
-
-    final progress = progressResult.fold((l) => 0.0, (r) => r);
-
-    // Calculate streaks for each habit
-    final streaks = <String, int>{};
-    for (final habit in habits) {
-      final streakResult = await calculateStreak(
-        CalculateStreakParams(habitId: habit.id),
-      );
-      streaks[habit.id] = streakResult.fold((l) => 0, (r) => r);
-    }
-
-    emit(TrackingLoaded(
-      entries: entries,
-      progressPercentage: progress,
-      streaks: streaks,
-      date: date,
+  // Get active habits
+  final habitsResult = await getActiveHabits();
+  if (habitsResult.isLeft()) {
+    emit(TrackingError(
+      habitsResult.fold((l) => l.message, (r) => ''),
     ));
+    return;
   }
+
+  final habits = habitsResult.fold((l) => <Habit>[], (r) => r);
+
+  // Get daily entries
+  final entriesResult = await getDailyEntries(
+    GetDailyEntriesParams(date: date),
+  );
+
+  if (entriesResult.isLeft()) {
+    emit(TrackingError(
+      entriesResult.fold((l) => l.message, (r) => ''),
+    ));
+    return;
+  }
+
+  final entries = entriesResult.fold((l) => <HabitEntry>[], (r) => r);
+
+  // Get daily progress
+  final progressResult = await getDailyProgress(
+    GetDailyProgressParams(date: date),
+  );
+
+  final progress = progressResult.fold((l) => 0.0, (r) => r);
+
+  // Calculate streaks for ALL active habits (not just those with entries today)
+  final streaks = <String, int>{};
+  for (final habit in habits) {
+    final streakResult = await calculateStreak(
+      CalculateStreakParams(habitId: habit.id),
+    );
+    streaks[habit.id] = streakResult.fold((l) => 0, (r) => r);
+  }
+
+  emit(TrackingLoaded(
+    entries: entries,
+    progressPercentage: progress,
+    streaks: streaks,
+    date: date,
+  ));
+}
 
   Future<void> _onToggleHabitCompletion(
     ToggleHabitCompletionEvent event,
     Emitter<TrackingState> emit,
   ) async {
     final result = await toggleHabitCompletion(
-      ToggleHabitCompletionParams(
-        habitId: event.habitId,
-        date: event.date,
-      ),
+      ToggleHabitCompletionParams(habitId: event.habitId, date: event.date),
     );
 
-    result.fold(
-      (failure) => emit(TrackingError(failure.message)),
-      (entry) {
-        // Immediately reload tracking to update progress
-        add(LoadDateTrackingEvent(event.date));
-      },
-    );
+    result.fold((failure) => emit(TrackingError(failure.message)), (entry) {
+      // Immediately reload tracking to update progress
+      add(LoadDateTrackingEvent(event.date));
+    });
   }
 
   Future<void> _onRefreshTracking(

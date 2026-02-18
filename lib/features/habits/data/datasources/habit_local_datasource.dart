@@ -1,8 +1,6 @@
 import 'package:hive/hive.dart';
 import 'package:habit_tracker/core/error/exceptions.dart';
 import '../models/habit_model.dart';
-
-/// Interface for local data source operations
 abstract class HabitLocalDataSource {
   /// Get all habits from local storage
   Future<List<HabitModel>> getAllHabits();

@@ -6,7 +6,6 @@ class AppConstants {
   // Database
   static const String habitsBoxName = 'habits';
   static const String entriesBoxName = 'entries';
-  static const String profileBoxName = 'profile';
 
   // Preferences Keys
   static const String prefThemeMode = 'theme_mode';
@@ -16,7 +15,6 @@ class AppConstants {
   // Validation
   static const int habitNameMinLength = 1;
   static const int habitNameMaxLength = 50;
-  static const int profileNameMaxLength = 50;
 
   // UI
   static const double cardBorderRadius = 16.0;

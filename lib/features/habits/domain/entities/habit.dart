@@ -20,7 +20,6 @@ class Habit extends Equatable {
     this.isActive = true,
   });
 
-  /// Creates a copy of this habit with the given fields replaced
   Habit copyWith({
     String? id,
     String? name,

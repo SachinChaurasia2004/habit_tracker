@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 import '../../../../core/theme/app_colors.dart';
+import '../../../../core/utils/date_helper.dart';
 import '../../domain/entities/habit.dart';
 
 class HabitCardWidget extends StatelessWidget {
   final Habit habit;
   final int streak;
   final bool isCompleted;
+  final DateTime date;
   final VoidCallback onToggle;
   final VoidCallback? onEdit;
   final VoidCallback? onDelete;
@@ -18,11 +20,15 @@ class HabitCardWidget extends StatelessWidget {
     required this.onToggle,
     this.onEdit,
     this.onDelete,
+    required this.date,
   });
 
   @override
   Widget build(BuildContext context) {
     final habitColor = Color(habit.colorCode);
+    final isToday = DateHelper.isToday(date);
+    final isPast = date.isBefore(DateHelper.normalize(DateTime.now()));
+    final isFuture = date.isAfter(DateHelper.normalize(DateTime.now()));
 
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
@@ -30,104 +36,132 @@ class HabitCardWidget extends StatelessWidget {
         color: AppColors.cardBackground,
         borderRadius: BorderRadius.circular(16),
         // Border color matches the habit's icon color when completed
-        border: isCompleted
-            ? Border.all(color: habitColor, width: 2)
-            : null,
+        border: isCompleted ? Border.all(color: habitColor, width: 2) : null,
       ),
       child: Material(
         color: Colors.transparent,
         child: InkWell(
-          onTap: onToggle,
+          onTap: isToday ? onToggle : null,
           onLongPress: () => _showOptions(context),
           borderRadius: BorderRadius.circular(16),
-          child: Padding(
-            padding: const EdgeInsets.all(16),
-            child: Row(
-              children: [
-                // Icon Container
-                Container(
-                  width: 48,
-                  height: 48,
-                  decoration: BoxDecoration(
-                    color: habitColor.withOpacity(0.2),
-                    borderRadius: BorderRadius.circular(12),
+          child: Opacity(
+            opacity: isToday ? 1.0 : 0.6,
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: Row(
+                children: [
+                  // Icon Container
+                  Container(
+                    width: 48,
+                    height: 48,
+                    decoration: BoxDecoration(
+                      color: habitColor.withOpacity(0.2),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Icon(
+                      _getIconData(habit.iconName),
+                      color: habitColor,
+                      size: 24,
+                    ),
                   ),
-                  child: Icon(
-                    _getIconData(habit.iconName),
-                    color: habitColor,
-                    size: 24,
-                  ),
-                ),
 
-                const SizedBox(width: 16),
+                  const SizedBox(width: 16),
 
-                // Habit Info
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        habit.name,
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w600,
-                          color: Colors.white,
-                          decoration: isCompleted
-                              ? TextDecoration.lineThrough
-                              : null,
-                          decorationColor: habitColor,
-                          decorationThickness: 2,
+                  // Habit Info
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          habit.name,
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
+                            color: Colors.white,
+                            decoration: isCompleted
+                                ? TextDecoration.lineThrough
+                                : null,
+                            decorationColor: habitColor,
+                            decorationThickness: 2,
+                          ),
                         ),
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        isCompleted ? 'Completed' : '$streak Day Streak',
-                        style: TextStyle(
-                          fontSize: 13,
-                          // Completed text also matches habit color
+                        const SizedBox(height: 4),
+                        Text(
+                          _getStatusText(
+                            isToday,
+                            isPast,
+                            isFuture,
+                            isCompleted,
+                            streak,
+                          ),
+                          style: TextStyle(
+                            fontSize: 13,
+                            color: isCompleted
+                                ? habitColor
+                                : AppColors.textSecondary,
+                            fontWeight: isCompleted
+                                ? FontWeight.w500
+                                : FontWeight.normal,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+
+                  // Checkbox
+                  GestureDetector(
+                    onTap: isToday ? onToggle : null,
+                    child: Container(
+                      width: 28,
+                      height: 28,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        border: Border.all(
+                          // Border and fill color match habit color
                           color: isCompleted
                               ? habitColor
                               : AppColors.textSecondary,
-                          fontWeight:
-                              isCompleted ? FontWeight.w500 : FontWeight.normal,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
 
-                // Checkbox
-                GestureDetector(
-                  onTap: onToggle,
-                  child: Container(
-                    width: 28,
-                    height: 28,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      border: Border.all(
-                        // Border and fill color match habit color
-                        color: isCompleted
-                            ? habitColor
-                            : AppColors.textSecondary,
-                        width: 2,
+                          width: 2,
+                        ),
+                        color: isCompleted ? habitColor : Colors.transparent,
                       ),
-                      color: isCompleted ? habitColor : Colors.transparent,
+                      child: isCompleted
+                          ? const Icon(
+                              Icons.check,
+                              size: 16,
+                              color: Colors.white,
+                            )
+                          : null,
                     ),
-                    child: isCompleted
-                        ? const Icon(
-                            Icons.check,
-                            size: 16,
-                            color: Colors.white,
-                          )
-                        : null,
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
         ),
       ),
     );
+  }
+
+  String _getStatusText(
+    bool isToday,
+    bool isPast,
+    bool isFuture,
+    bool isCompleted,
+    int streak,
+  ) {
+    if (isFuture) {
+      return 'Upcoming';
+    } else if (isPast && isCompleted) {
+      return 'Completed';
+    } else if (isPast && !isCompleted) {
+      return 'Missed';
+    } else if (isToday && isCompleted) {
+      return 'Completed';
+    } else {
+      return '$streak Day Streak';
+    }
   }
 
   void _showOptions(BuildContext context) {

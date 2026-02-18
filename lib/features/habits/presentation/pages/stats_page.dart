@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import '../../../../core/theme/app_colors.dart';
 
 class StatsPage extends StatelessWidget {
-  const StatsPage({Key? key}) : super(key: key);
+  const StatsPage({super.key});
 
   @override
   Widget build(BuildContext context) {

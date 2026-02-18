@@ -12,8 +12,8 @@ class CustomFAB extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      width: 56,
-      height: 56,
+      width: 66,
+      height: 66,
       decoration: BoxDecoration(
         shape: BoxShape.circle,
         gradient: const LinearGradient(

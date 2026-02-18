@@ -36,10 +36,17 @@ class TrackingLoaded extends TrackingState {
   List<Object?> get props => [entries, progressPercentage, streaks, date];
 
   /// Check if a habit is completed
+  /// Returns false if no entry exists for this habit
   bool isHabitCompleted(String habitId) {
-    return entries.any((entry) => 
-      entry.habitId == habitId && entry.isCompleted
-    );
+    try {
+      final entry = entries.firstWhere(
+        (entry) => entry.habitId == habitId,
+      );
+      return entry.isCompleted;
+    } catch (e) {
+      // No entry found for this habit - not completed
+      return false;
+    }
   }
 
   /// Get completion count

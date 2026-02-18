@@ -2,12 +2,12 @@ import 'package:flutter/material.dart';
 
 class AppColors {
   // Background Colors
-  static const Color background = Color(0xFF1A1A1A); // Slightly darker
-  static const Color cardBackground = Color(0xFF2A2A2A);
+  static const Color background = Color(0xFF1A1A1A); 
+  static const Color cardBackground = Color.fromARGB(255, 42, 42, 42);
   static const Color surfaceVariant = Color(0xFF333333);
 
   // Primary Brand Color
-  static const Color primary = Color(0xFF6366F1); // Purple/Indigo
+  static const Color primary = Color(0xFF6366F1); 
   static const Color primaryLight = Color(0xFF818CF8);
   static const Color primaryDark = Color(0xFF4F46E5);
 
@@ -17,7 +17,7 @@ class AppColors {
   static const Color textTertiary = Color(0xFF6B7280);
 
   // Status Colors
-  static const Color success = Color(0xFF10B981); // Green for completed
+  static const Color success = Color(0xFF10B981);
   static const Color warning = Color(0xFFF59E0B);
   static const Color error = Color(0xFFEF4444);
   static const Color info = Color(0xFF3B82F6);
@@ -49,8 +49,8 @@ class AppColors {
     gymRed,
     meditationPurple,
     walkYellow,
-    Color(0xFFEC4899), // Pink
-    Color(0xFF14B8A6), // Teal
+    Color(0xFFEC4899), 
+    Color(0xFF14B8A6), 
   ];
 
   static Color getHabitColor(int index) {
