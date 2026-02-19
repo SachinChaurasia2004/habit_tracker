@@ -1,17 +1,13 @@
 import 'package:equatable/equatable.dart';
 
-/// Represents a single tracking entry for a habit on a specific date.
 /// Records whether the habit was completed on that day.
 class HabitEntry extends Equatable {
   /// Unique identifier for this entry
   final String id;
-  
   /// Reference to the parent Habit
   final String habitId;
-  
-  /// The date this entry is for (time component should be stripped)
+  /// The date this entry is for
   final DateTime date;
-  
   /// Whether the habit was completed on this date
   final bool isCompleted;
 
@@ -37,7 +33,7 @@ class HabitEntry extends Equatable {
     );
   }
 
-  /// Returns a normalized date (with time component stripped to 00:00:00)
+  /// Returns a date with time component stripped 
   DateTime get normalizedDate {
     return DateTime(date.year, date.month, date.day);
   }

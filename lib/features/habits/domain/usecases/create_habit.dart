@@ -1,6 +1,7 @@
 import 'package:dartz/dartz.dart';
 import '../../../../core/error/failures.dart';
 import '../../../../core/usecases/usecase.dart';
+import '../../../../core/utils/validators.dart';
 import '../entities/habit.dart';
 import '../repositories/habit_repository.dart';
 
@@ -12,13 +13,10 @@ class CreateHabit implements UseCase<Habit, CreateHabitParams> {
 
   @override
   Future<Either<Failure, Habit>> call(CreateHabitParams params) async {
-    // Validate habit name
-    if (params.name.trim().isEmpty) {
-      return const Left(ValidationFailure('Habit name cannot be empty'));
-    }
-
-    if (params.name.length > 50) {
-      return const Left(ValidationFailure('Habit name too long (max 50 characters)'));
+    
+     final nameValidation = Validators.validateHabitName(params.name);
+    if (nameValidation != null) {
+      return Left(nameValidation);
     }
 
     // Create the habit entity
@@ -31,7 +29,6 @@ class CreateHabit implements UseCase<Habit, CreateHabitParams> {
       isActive: true,
     );
 
-    // Delegate to repository
     return await repository.createHabit(habit);
   }
 }

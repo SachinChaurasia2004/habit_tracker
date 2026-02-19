@@ -14,7 +14,6 @@ class HabitRepositoryImpl implements HabitRepository {
   @override
   Future<Either<Failure, Habit>> createHabit(Habit habit) async {
     try {
-      // Check if habit already exists
       final exists = await localDataSource.habitExists(habit.id);
       if (exists) {
         return const Left(DuplicateHabitFailure('Habit already exists'));

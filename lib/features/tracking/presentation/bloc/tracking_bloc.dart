@@ -81,7 +81,7 @@ class TrackingBloc extends Bloc<TrackingEvent, TrackingState> {
 
   final progress = progressResult.fold((l) => 0.0, (r) => r);
 
-  // Calculate streaks for ALL active habits (not just those with entries today)
+  // Calculate streaks for ALL active habits
   final streaks = <String, int>{};
   for (final habit in habits) {
     final streakResult = await calculateStreak(

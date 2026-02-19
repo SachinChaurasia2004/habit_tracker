@@ -1,6 +1,7 @@
 import 'package:dartz/dartz.dart';
 import '../../../../core/error/failures.dart';
 import '../../../../core/usecases/usecase.dart';
+import '../../../../core/utils/validators.dart';
 import '../entities/habit.dart';
 import '../repositories/habit_repository.dart';
 
@@ -14,32 +15,26 @@ class UpdateHabit implements UseCase<Habit, UpdateHabitParams> {
   Future<Either<Failure, Habit>> call(UpdateHabitParams params) async {
     // Validate habit name if provided
     if (params.name != null) {
-      if (params.name!.trim().isEmpty) {
-        return const Left(ValidationFailure('Habit name cannot be empty'));
-      }
-      if (params.name!.length > 50) {
-        return const Left(ValidationFailure('Habit name too long (max 50 characters)'));
+      final nameValidation = Validators.validateHabitName(params.name);
+      if (nameValidation != null) {
+        return Left(nameValidation);
       }
     }
 
     // Get the existing habit
     final habitResult = await repository.getHabitById(params.habitId);
 
-    return habitResult.fold(
-      (failure) => Left(failure),
-      (existingHabit) async {
-        // Create updated habit with new values
-        final updatedHabit = existingHabit.copyWith(
-          name: params.name ?? existingHabit.name,
-          iconName: params.iconName ?? existingHabit.iconName,
-          colorCode: params.colorCode ?? existingHabit.colorCode,
-          isActive: params.isActive ?? existingHabit.isActive,
-        );
+    return habitResult.fold((failure) => Left(failure), (existingHabit) async {
+      // Create updated habit with new values
+      final updatedHabit = existingHabit.copyWith(
+        name: params.name ?? existingHabit.name,
+        iconName: params.iconName ?? existingHabit.iconName,
+        colorCode: params.colorCode ?? existingHabit.colorCode,
+        isActive: params.isActive ?? existingHabit.isActive,
+      );
 
-        // Delegate to repository
-        return await repository.updateHabit(updatedHabit);
-      },
-    );
+      return await repository.updateHabit(updatedHabit);
+    });
   }
 }
 

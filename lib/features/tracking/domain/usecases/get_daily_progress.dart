@@ -4,8 +4,6 @@ import '../../../../core/usecases/usecase.dart';
 import '../repositories/tracking_repository.dart';
 
 /// Use case for getting the completion percentage for a specific date
-/// Returns a value between 0 and 100 representing the percentage of 
-/// active habits that were completed on that date
 class GetDailyProgress implements UseCase<double, GetDailyProgressParams> {
   final TrackingRepository repository;
 

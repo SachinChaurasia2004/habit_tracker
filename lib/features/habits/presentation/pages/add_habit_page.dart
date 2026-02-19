@@ -6,11 +6,17 @@ import '../../domain/entities/habit.dart';
 import '../bloc/habit_bloc.dart';
 import '../bloc/habit_event.dart';
 import '../bloc/habit_state.dart';
+import '../widgets/add_habit_color_selector.dart';
+import '../widgets/add_habit_icon_selector.dart';
+import '../widgets/add_habit_name_field.dart';
+import '../widgets/add_habit_preview_card.dart';
+import '../widgets/add_habit_save_button.dart';
+import '../widgets/add_section_label.dart';
 
 class AddHabitPage extends StatefulWidget {
-  final Habit? habit; 
-
   const AddHabitPage({super.key, this.habit});
+
+  final Habit? habit;
 
   @override
   State<AddHabitPage> createState() => _AddHabitPageState();
@@ -19,22 +25,22 @@ class AddHabitPage extends StatefulWidget {
 class _AddHabitPageState extends State<AddHabitPage> {
   final _formKey = GlobalKey<FormState>();
   final _nameController = TextEditingController();
-  
-  String _selectedIcon = 'yoga';
-  int _selectedColorIndex = 0;
 
-  bool get isEditMode => widget.habit != null;
+  late String _selectedIcon;
+  late int _selectedColorIndex;
+
+  bool get _isEditMode => widget.habit != null;
 
   @override
   void initState() {
     super.initState();
-    if (isEditMode) {
+    if (_isEditMode) {
       _nameController.text = widget.habit!.name;
       _selectedIcon = widget.habit!.iconName;
-      _selectedColorIndex = AppColors.habitColors.indexWhere(
-        (color) => color.value == widget.habit!.colorCode,
-      );
-      if (_selectedColorIndex == -1) _selectedColorIndex = 0;
+      _selectedColorIndex = _indexOfColor(widget.habit!.colorCode);
+    } else {
+      _selectedIcon = AppConstants.habitIcons.first;
+      _selectedColorIndex = 0;
     }
   }
 
@@ -44,37 +50,76 @@ class _AddHabitPageState extends State<AddHabitPage> {
     super.dispose();
   }
 
+  int _indexOfColor(int colorCode) {
+    final index = AppColors.habitColors.indexWhere((c) => c.value == colorCode);
+    return index == -1 ? 0 : index;
+  }
+
+  Color get _selectedColor => AppColors.habitColors[_selectedColorIndex];
+
+  void _saveHabit() {
+    if (!_formKey.currentState!.validate()) return;
+
+    final name = _nameController.text.trim();
+    final colorCode = _selectedColor.value;
+
+    if (_isEditMode) {
+      context.read<HabitBloc>().add(
+        UpdateHabitEvent(
+          habitId: widget.habit!.id,
+          name: name,
+          iconName: _selectedIcon,
+          colorCode: colorCode,
+        ),
+      );
+    } else {
+      context.read<HabitBloc>().add(
+        CreateHabitEvent(
+          name: name,
+          iconName: _selectedIcon,
+          colorCode: colorCode,
+        ),
+      );
+    }
+  }
+
+  void _onStateChanged(BuildContext context, HabitState state) {
+    if (state is HabitCreated) {
+      _showSnackBar(context, 'Habit created successfully!');
+      Navigator.pop(context);
+    } else if (state is HabitUpdated) {
+      _showSnackBar(context, 'Habit updated successfully!');
+      Navigator.pop(context);
+    } else if (state is HabitError) {
+      _showSnackBar(context, state.message, isError: true);
+    }
+  }
+
+  void _showSnackBar(
+    BuildContext context,
+    String message, {
+    bool isError = false,
+  }) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: isError ? AppColors.error : null,
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(isEditMode ? 'Edit Habit' : 'New Habit'),
+        title: Text(_isEditMode ? 'Edit Habit' : 'New Habit'),
         leading: IconButton(
           icon: const Icon(Icons.close),
           onPressed: () => Navigator.pop(context),
         ),
       ),
       body: BlocListener<HabitBloc, HabitState>(
-        listener: (context, state) {
-          if (state is HabitCreated) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('Habit created successfully!')),
-            );
-            Navigator.pop(context);
-          } else if (state is HabitUpdated) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('Habit updated successfully!')),
-            );
-            Navigator.pop(context);
-          } else if (state is HabitError) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text(state.message),
-                backgroundColor: AppColors.error,
-              ),
-            );
-          }
-        },
+        listener: _onStateChanged,
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(AppConstants.defaultPadding),
           child: Form(
@@ -82,264 +127,42 @@ class _AddHabitPageState extends State<AddHabitPage> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Habit Name
-                Text(
-                  'Habit Name',
-                  style: Theme.of(context).textTheme.titleLarge,
-                ),
+                const SectionLabel('Habit Name'),
                 const SizedBox(height: 12),
-                TextFormField(
+                HabitNameField(
                   controller: _nameController,
-                  decoration: const InputDecoration(
-                    hintText: 'e.g., Morning Yoga',
-                  ),
-                  validator: (value) {
-                    if (value == null || value.trim().isEmpty) {
-                      return 'Please enter a habit name';
-                    }
-                    if (value.length > AppConstants.habitNameMaxLength) {
-                      return 'Name too long (max ${AppConstants.habitNameMaxLength} characters)';
-                    }
-                    return null;
-                  },
+                  onChanged: () => setState(() {}),
                 ),
-
                 const SizedBox(height: 32),
-
-                // Icon Selection
-                Text(
-                  'Choose an Icon',
-                  style: Theme.of(context).textTheme.titleLarge,
-                ),
+                const SectionLabel('Choose an Icon'),
                 const SizedBox(height: 12),
-                _buildIconSelector(),
-
-                const SizedBox(height: 32),
-
-                // Color Selection
-                Text(
-                  'Choose a Color',
-                  style: Theme.of(context).textTheme.titleLarge,
+                HabitIconSelector(
+                  selected: _selectedIcon,
+                  onSelected: (icon) => setState(() => _selectedIcon = icon),
                 ),
+                const SizedBox(height: 32),
+                const SectionLabel('Choose a Color'),
                 const SizedBox(height: 12),
-                _buildColorSelector(),
-
-                const SizedBox(height: 32),
-
-                // Preview Card
-                Text(
-                  'Preview',
-                  style: Theme.of(context).textTheme.titleLarge,
+                HabitColorSelector(
+                  selectedIndex: _selectedColorIndex,
+                  onSelected: (index) =>
+                      setState(() => _selectedColorIndex = index),
                 ),
+                const SizedBox(height: 32),
+                const SectionLabel('Preview'),
                 const SizedBox(height: 12),
-                _buildPreview(),
-
-                const SizedBox(height: 32),
-
-                // Save Button
-                SizedBox(
-                  width: double.infinity,
-                  child: BlocBuilder<HabitBloc, HabitState>(
-                    builder: (context, state) {
-                      final isLoading = state is HabitLoading;
-                      
-                      return ElevatedButton(
-                        onPressed: isLoading ? null : _saveHabit,
-                        child: isLoading
-                            ? const SizedBox(
-                                height: 20,
-                                width: 20,
-                                child: CircularProgressIndicator(
-                                  strokeWidth: 2,
-                                  valueColor: AlwaysStoppedAnimation<Color>(
-                                    Colors.white,
-                                  ),
-                                ),
-                              )
-                            : Text(isEditMode ? 'Update Habit' : 'Create Habit'),
-                      );
-                    },
-                  ),
+                HabitPreviewCard(
+                  name: _nameController.text,
+                  iconName: _selectedIcon,
+                  color: _selectedColor,
                 ),
+                const SizedBox(height: 32),
+                HabitSaveButton(isEditMode: _isEditMode, onPressed: _saveHabit),
               ],
             ),
           ),
         ),
       ),
     );
-  }
-
-  Widget _buildIconSelector() {
-    return GridView.builder(
-      shrinkWrap: true,
-      physics: const NeverScrollableScrollPhysics(),
-      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: 4,
-        mainAxisSpacing: 12,
-        crossAxisSpacing: 12,
-      ),
-      itemCount: AppConstants.habitIcons.length,
-      itemBuilder: (context, index) {
-        final icon = AppConstants.habitIcons[index];
-        final isSelected = _selectedIcon == icon;
-
-        return InkWell(
-          onTap: () => setState(() => _selectedIcon = icon),
-          borderRadius: BorderRadius.circular(12),
-          child: Container(
-            decoration: BoxDecoration(
-              color: isSelected 
-                  ? AppColors.primary.withOpacity(0.2)
-                  : AppColors.cardBackground,
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(
-                color: isSelected ? AppColors.primary : Colors.transparent,
-                width: 2,
-              ),
-            ),
-            child: Center(
-              child: Icon(
-                _getIconData(icon),
-                size: 32,
-                color: isSelected ? AppColors.primary : AppColors.textPrimary,
-              ),
-            ),
-          ),
-        );
-      },
-    );
-  }
-
-  Widget _buildColorSelector() {
-    return Wrap(
-      spacing: 12,
-      runSpacing: 12,
-      children: List.generate(
-        AppColors.habitColors.length,
-        (index) {
-          final color = AppColors.habitColors[index];
-          final isSelected = _selectedColorIndex == index;
-
-          return InkWell(
-            onTap: () => setState(() => _selectedColorIndex = index),
-            borderRadius: BorderRadius.circular(12),
-            child: Container(
-              width: 56,
-              height: 56,
-              decoration: BoxDecoration(
-                color: color,
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(
-                  color: isSelected ? Colors.white : Colors.transparent,
-                  width: 3,
-                ),
-              ),
-              child: isSelected
-                  ? const Icon(
-                      Icons.check,
-                      color: Colors.white,
-                      size: 28,
-                    )
-                  : null,
-            ),
-          );
-        },
-      ),
-    );
-  }
-
-  Widget _buildPreview() {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: AppColors.cardBackground,
-        borderRadius: BorderRadius.circular(AppConstants.cardBorderRadius),
-      ),
-      child: Row(
-        children: [
-          Container(
-            width: 48,
-            height: 48,
-            decoration: BoxDecoration(
-              color: AppColors.habitColors[_selectedColorIndex].withOpacity(0.2),
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: Icon(
-              _getIconData(_selectedIcon),
-              color: AppColors.habitColors[_selectedColorIndex],
-              size: 28,
-            ),
-          ),
-          const SizedBox(width: 16),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  _nameController.text.isEmpty 
-                      ? 'Habit Name' 
-                      : _nameController.text,
-                  style: Theme.of(context).textTheme.titleLarge,
-                ),
-                const SizedBox(height: 4),
-                const Text(
-                  '0 Day Streak',
-                  style: TextStyle(
-                    fontSize: 14,
-                    color: AppColors.textSecondary,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  IconData _getIconData(String iconName) {
-    switch (iconName) {
-      case 'yoga':
-        return Icons.self_improvement;
-      case 'water':
-        return Icons.water_drop;
-      case 'book':
-        return Icons.menu_book;
-      case 'gym':
-        return Icons.fitness_center;
-      case 'meditation':
-        return Icons.spa;
-      case 'walk':
-        return Icons.directions_walk;
-      case 'sleep':
-        return Icons.bedtime;
-      case 'nutrition':
-        return Icons.restaurant;
-      default:
-        return Icons.check_circle_outline;
-    }
-  }
-
-  void _saveHabit() {
-    if (_formKey.currentState!.validate()) {
-      if (isEditMode) {
-        context.read<HabitBloc>().add(
-              UpdateHabitEvent(
-                habitId: widget.habit!.id,
-                name: _nameController.text.trim(),
-                iconName: _selectedIcon,
-                colorCode: AppColors.habitColors[_selectedColorIndex].value,
-              ),
-            );
-      } else {
-        context.read<HabitBloc>().add(
-              CreateHabitEvent(
-                name: _nameController.text.trim(),
-                iconName: _selectedIcon,
-                colorCode: AppColors.habitColors[_selectedColorIndex].value,
-              ),
-            );
-      }
-    }
   }
 }

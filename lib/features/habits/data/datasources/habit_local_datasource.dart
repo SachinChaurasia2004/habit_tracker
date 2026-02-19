@@ -1,27 +1,23 @@
 import 'package:hive/hive.dart';
 import 'package:habit_tracker/core/error/exceptions.dart';
 import '../models/habit_model.dart';
+
 abstract class HabitLocalDataSource {
   /// Get all habits from local storage
   Future<List<HabitModel>> getAllHabits();
-
   /// Get a specific habit by ID
   Future<HabitModel> getHabitById(String id);
-
   /// Save a habit to local storage
   Future<void> saveHabit(HabitModel habit);
-
   /// Update an existing habit
   Future<void> updateHabit(HabitModel habit);
-
   /// Delete a habit by ID
   Future<void> deleteHabit(String id);
-
   /// Check if a habit exists
   Future<bool> habitExists(String id);
 }
 
-/// Implementation using Hive
+/// Implementation
 class HabitLocalDataSourceImpl implements HabitLocalDataSource {
   final Box<HabitModel> box;
 

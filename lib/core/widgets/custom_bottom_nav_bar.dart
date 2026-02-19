@@ -14,7 +14,7 @@ class CustomBottomNavBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      height: 80,
+      height: 70,
       decoration: BoxDecoration(
         color: AppColors.cardBackground,
         borderRadius: const BorderRadius.only(
@@ -47,7 +47,7 @@ class CustomBottomNavBar extends StatelessWidget {
                     isSelected: currentIndex == 0,
                   ),
                   _buildNavItem(
-                    icon: Icons.calendar_today_outlined,
+                    icon: Icons.calendar_month,
                     index: 1,
                     isSelected: currentIndex == 1,
                   ),
@@ -59,7 +59,7 @@ class CustomBottomNavBar extends StatelessWidget {
                     isSelected: currentIndex == 2,
                   ),
                   _buildNavItem(
-                    icon: Icons.person_outline,
+                    icon: Icons.person,
                     index: 3,
                     isSelected: currentIndex == 3,
                   ),

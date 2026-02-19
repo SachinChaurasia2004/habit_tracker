@@ -5,7 +5,6 @@ import '../repositories/habit_repository.dart';
 import '../../../tracking/domain/repositories/tracking_repository.dart';
 
 /// Use case for deleting a habit
-/// Also deletes all associated tracking entries
 class DeleteHabit implements UseCase<Unit, DeleteHabitParams> {
   final HabitRepository habitRepository;
   final TrackingRepository trackingRepository;
@@ -25,7 +24,6 @@ class DeleteHabit implements UseCase<Unit, DeleteHabitParams> {
       return deleteEntriesResult;
     }
 
-    // Then delete the habit itself
     return await habitRepository.deleteHabit(params.habitId);
   }
 }

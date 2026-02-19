@@ -5,7 +5,6 @@ import '../entities/habit_entry.dart';
 import '../repositories/tracking_repository.dart';
 
 /// Use case for retrieving all entries for a specific habit
-/// Useful for displaying habit history or calculating statistics
 class GetEntriesForHabit implements UseCase<List<HabitEntry>, GetEntriesForHabitParams> {
   final TrackingRepository repository;
 

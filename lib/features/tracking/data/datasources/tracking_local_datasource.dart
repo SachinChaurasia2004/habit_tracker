@@ -14,7 +14,10 @@ abstract class TrackingLocalDataSource {
   Future<List<HabitEntryModel>> getEntriesForDate(DateTime date);
 
   /// Get a specific entry by habit and date
-  Future<HabitEntryModel?> getEntryByHabitAndDate(String habitId, DateTime date);
+  Future<HabitEntryModel?> getEntryByHabitAndDate(
+    String habitId,
+    DateTime date,
+  );
 
   /// Save an entry
   Future<void> saveEntry(HabitEntryModel entry);
@@ -29,7 +32,7 @@ abstract class TrackingLocalDataSource {
   Future<void> deleteEntriesForHabit(String habitId);
 }
 
-/// Implementation using Hive
+/// Implementation
 class TrackingLocalDataSourceImpl implements TrackingLocalDataSource {
   final Box<HabitEntryModel> box;
 
@@ -47,9 +50,7 @@ class TrackingLocalDataSourceImpl implements TrackingLocalDataSource {
   @override
   Future<List<HabitEntryModel>> getEntriesForHabit(String habitId) async {
     try {
-      return box.values
-          .where((entry) => entry.habitId == habitId)
-          .toList();
+      return box.values.where((entry) => entry.habitId == habitId).toList();
     } catch (e) {
       throw CacheException('Failed to get entries for habit: ${e.toString()}');
     }
@@ -79,19 +80,19 @@ class TrackingLocalDataSourceImpl implements TrackingLocalDataSource {
   ) async {
     try {
       final normalizedDate = DateTime(date.year, date.month, date.day);
-      
+
       for (final entry in box.values) {
         final entryDate = DateTime(
           entry.date.year,
           entry.date.month,
           entry.date.day,
         );
-        
+
         if (entry.habitId == habitId && entryDate == normalizedDate) {
           return entry;
         }
       }
-      
+
       return null;
     } catch (e) {
       throw CacheException('Failed to get entry: ${e.toString()}');

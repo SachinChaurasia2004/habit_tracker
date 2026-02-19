@@ -18,7 +18,7 @@ class HabitLoading extends HabitState {
   const HabitLoading();
 }
 
-/// Habits loaded successfully
+/// Habits loaded 
 class HabitsLoaded extends HabitState {
   final List<Habit> habits;
 
@@ -28,7 +28,7 @@ class HabitsLoaded extends HabitState {
   List<Object?> get props => [habits];
 }
 
-/// Habit created successfully
+/// Habit created 
 class HabitCreated extends HabitState {
   final Habit habit;
 
@@ -38,7 +38,7 @@ class HabitCreated extends HabitState {
   List<Object?> get props => [habit];
 }
 
-/// Habit updated successfully
+/// Habit updated
 class HabitUpdated extends HabitState {
   final Habit habit;
 
@@ -48,7 +48,7 @@ class HabitUpdated extends HabitState {
   List<Object?> get props => [habit];
 }
 
-/// Habit deleted successfully
+/// Habit deleted 
 class HabitDeleted extends HabitState {
   const HabitDeleted();
 }
