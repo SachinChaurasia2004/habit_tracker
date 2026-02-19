@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/utils/app_constants.dart';
+import '../../../../core/utils/responsive.dart';
 import '../../domain/entities/habit.dart';
 import '../bloc/habit_bloc.dart';
 import '../bloc/habit_event.dart';
@@ -30,6 +31,7 @@ class _AddHabitPageState extends State<AddHabitPage> {
   late int _selectedColorIndex;
 
   bool get _isEditMode => widget.habit != null;
+  Color get _selectedColor => AppColors.habitColors[_selectedColorIndex];
 
   @override
   void initState() {
@@ -55,8 +57,6 @@ class _AddHabitPageState extends State<AddHabitPage> {
     return index == -1 ? 0 : index;
   }
 
-  Color get _selectedColor => AppColors.habitColors[_selectedColorIndex];
-
   void _saveHabit() {
     if (!_formKey.currentState!.validate()) return;
 
@@ -64,22 +64,18 @@ class _AddHabitPageState extends State<AddHabitPage> {
     final colorCode = _selectedColor.value;
 
     if (_isEditMode) {
-      context.read<HabitBloc>().add(
-        UpdateHabitEvent(
-          habitId: widget.habit!.id,
-          name: name,
-          iconName: _selectedIcon,
-          colorCode: colorCode,
-        ),
-      );
+      context.read<HabitBloc>().add(UpdateHabitEvent(
+            habitId: widget.habit!.id,
+            name: name,
+            iconName: _selectedIcon,
+            colorCode: colorCode,
+          ));
     } else {
-      context.read<HabitBloc>().add(
-        CreateHabitEvent(
-          name: name,
-          iconName: _selectedIcon,
-          colorCode: colorCode,
-        ),
-      );
+      context.read<HabitBloc>().add(CreateHabitEvent(
+            name: name,
+            iconName: _selectedIcon,
+            colorCode: colorCode,
+          ));
     }
   }
 
@@ -95,11 +91,8 @@ class _AddHabitPageState extends State<AddHabitPage> {
     }
   }
 
-  void _showSnackBar(
-    BuildContext context,
-    String message, {
-    bool isError = false,
-  }) {
+  void _showSnackBar(BuildContext context, String message,
+      {bool isError = false}) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(message),
@@ -110,6 +103,9 @@ class _AddHabitPageState extends State<AddHabitPage> {
 
   @override
   Widget build(BuildContext context) {
+    final padding = context.pagePadding;
+    final isTablet = context.isTabletOrLarger;
+
     return Scaffold(
       appBar: AppBar(
         title: Text(_isEditMode ? 'Edit Habit' : 'New Habit'),
@@ -120,49 +116,180 @@ class _AddHabitPageState extends State<AddHabitPage> {
       ),
       body: BlocListener<HabitBloc, HabitState>(
         listener: _onStateChanged,
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.all(AppConstants.defaultPadding),
-          child: Form(
-            key: _formKey,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const SectionLabel('Habit Name'),
-                const SizedBox(height: 12),
-                HabitNameField(
-                  controller: _nameController,
-                  onChanged: () => setState(() {}),
-                ),
-                const SizedBox(height: 32),
-                const SectionLabel('Choose an Icon'),
-                const SizedBox(height: 12),
-                HabitIconSelector(
-                  selected: _selectedIcon,
-                  onSelected: (icon) => setState(() => _selectedIcon = icon),
-                ),
-                const SizedBox(height: 32),
-                const SectionLabel('Choose a Color'),
-                const SizedBox(height: 12),
-                HabitColorSelector(
-                  selectedIndex: _selectedColorIndex,
-                  onSelected: (index) =>
-                      setState(() => _selectedColorIndex = index),
-                ),
-                const SizedBox(height: 32),
-                const SectionLabel('Preview'),
-                const SizedBox(height: 12),
-                HabitPreviewCard(
-                  name: _nameController.text,
-                  iconName: _selectedIcon,
-                  color: _selectedColor,
-                ),
-                const SizedBox(height: 32),
-                HabitSaveButton(isEditMode: _isEditMode, onPressed: _saveHabit),
-              ],
+        child: Center(
+          child: ConstrainedBox(
+            constraints: BoxConstraints(maxWidth: context.contentMaxWidth),
+            child: SingleChildScrollView(
+              padding: EdgeInsets.all(padding),
+              child: Form(
+                key: _formKey,
+                child: isTablet
+                    ? _TabletLayout(
+                        nameController: _nameController,
+                        selectedIcon: _selectedIcon,
+                        selectedColorIndex: _selectedColorIndex,
+                        selectedColor: _selectedColor,
+                        isEditMode: _isEditMode,
+                        onIconSelected: (icon) =>
+                            setState(() => _selectedIcon = icon),
+                        onColorSelected: (index) =>
+                            setState(() => _selectedColorIndex = index),
+                        onNameChanged: () => setState(() {}),
+                        onSave: _saveHabit,
+                      )
+                    : _PhoneLayout(
+                        nameController: _nameController,
+                        selectedIcon: _selectedIcon,
+                        selectedColorIndex: _selectedColorIndex,
+                        selectedColor: _selectedColor,
+                        isEditMode: _isEditMode,
+                        onIconSelected: (icon) =>
+                            setState(() => _selectedIcon = icon),
+                        onColorSelected: (index) =>
+                            setState(() => _selectedColorIndex = index),
+                        onNameChanged: () => setState(() {}),
+                        onSave: _saveHabit,
+                      ),
+              ),
             ),
           ),
         ),
       ),
+    );
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Layouts
+// ---------------------------------------------------------------------------
+
+class _PhoneLayout extends StatelessWidget {
+  const _PhoneLayout({
+    required this.nameController,
+    required this.selectedIcon,
+    required this.selectedColorIndex,
+    required this.selectedColor,
+    required this.isEditMode,
+    required this.onIconSelected,
+    required this.onColorSelected,
+    required this.onNameChanged,
+    required this.onSave,
+  });
+
+  final TextEditingController nameController;
+  final String selectedIcon;
+  final int selectedColorIndex;
+  final Color selectedColor;
+  final bool isEditMode;
+  final ValueChanged<String> onIconSelected;
+  final ValueChanged<int> onColorSelected;
+  final VoidCallback onNameChanged;
+  final VoidCallback onSave;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const SectionLabel('Habit Name'),
+        SizedBox(height: context.spacing(12)),
+        HabitNameField(controller: nameController, onChanged: onNameChanged),
+        SizedBox(height: context.spacing(32)),
+        const SectionLabel('Choose an Icon'),
+        SizedBox(height: context.spacing(12)),
+        HabitIconSelector(selected: selectedIcon, onSelected: onIconSelected),
+        SizedBox(height: context.spacing(32)),
+        const SectionLabel('Choose a Color'),
+        SizedBox(height: context.spacing(12)),
+        HabitColorSelector(
+            selectedIndex: selectedColorIndex, onSelected: onColorSelected),
+        SizedBox(height: context.spacing(32)),
+        const SectionLabel('Preview'),
+        SizedBox(height: context.spacing(12)),
+        HabitPreviewCard(
+            name: nameController.text,
+            iconName: selectedIcon,
+            color: selectedColor),
+        SizedBox(height: context.spacing(32)),
+        HabitSaveButton(isEditMode: isEditMode, onPressed: onSave),
+      ],
+    );
+  }
+}
+
+class _TabletLayout extends StatelessWidget {
+  const _TabletLayout({
+    required this.nameController,
+    required this.selectedIcon,
+    required this.selectedColorIndex,
+    required this.selectedColor,
+    required this.isEditMode,
+    required this.onIconSelected,
+    required this.onColorSelected,
+    required this.onNameChanged,
+    required this.onSave,
+  });
+
+  final TextEditingController nameController;
+  final String selectedIcon;
+  final int selectedColorIndex;
+  final Color selectedColor;
+  final bool isEditMode;
+  final ValueChanged<String> onIconSelected;
+  final ValueChanged<int> onColorSelected;
+  final VoidCallback onNameChanged;
+  final VoidCallback onSave;
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // Left column — name, icon, color
+        Expanded(
+          flex: 3,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const SectionLabel('Habit Name'),
+              SizedBox(height: context.spacing(12)),
+              HabitNameField(
+                  controller: nameController, onChanged: onNameChanged),
+              SizedBox(height: context.spacing(32)),
+              const SectionLabel('Choose an Icon'),
+              SizedBox(height: context.spacing(12)),
+              HabitIconSelector(
+                  selected: selectedIcon, onSelected: onIconSelected),
+              SizedBox(height: context.spacing(32)),
+              const SectionLabel('Choose a Color'),
+              SizedBox(height: context.spacing(12)),
+              HabitColorSelector(
+                  selectedIndex: selectedColorIndex,
+                  onSelected: onColorSelected),
+            ],
+          ),
+        ),
+
+        SizedBox(width: context.spacing(32)),
+
+        // Right column — preview + save
+        Expanded(
+          flex: 2,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const SectionLabel('Preview'),
+              SizedBox(height: context.spacing(12)),
+              HabitPreviewCard(
+                  name: nameController.text,
+                  iconName: selectedIcon,
+                  color: selectedColor),
+              SizedBox(height: context.spacing(32)),
+              HabitSaveButton(isEditMode: isEditMode, onPressed: onSave),
+            ],
+          ),
+        ),
+      ],
     );
   }
 }

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../../../core/utils/responsive.dart';
 
 class SectionLabel extends StatelessWidget {
   const SectionLabel(this.text, {super.key});
@@ -7,6 +8,11 @@ class SectionLabel extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Text(text, style: Theme.of(context).textTheme.titleLarge);
+    return Text(
+      text,
+      style: Theme.of(context).textTheme.titleLarge?.copyWith(
+            fontSize: context.fontSize(16),
+          ),
+    );
   }
 }

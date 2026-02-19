@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:habit_tracker/features/habits/presentation/widgets/add_habit_icon_data.dart';
 import '../../../../../core/theme/app_colors.dart';
 import '../../../../../core/utils/app_constants.dart';
+import '../../../../../core/utils/responsive.dart';
+import 'add_habit_icon_data.dart';
 
 class HabitIconSelector extends StatelessWidget {
   const HabitIconSelector({
@@ -15,13 +16,17 @@ class HabitIconSelector extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final crossAxisCount = context.isTabletOrLarger ? 6 : 4;
+    final iconSize = context.isTabletOrLarger ? 32.0 : 28.0;
+    final spacing = context.spacing(12);
+
     return GridView.builder(
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
-      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: 4,
-        mainAxisSpacing: 12,
-        crossAxisSpacing: 12,
+      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: crossAxisCount,
+        mainAxisSpacing: spacing,
+        crossAxisSpacing: spacing,
       ),
       itemCount: AppConstants.habitIcons.length,
       itemBuilder: (context, index) {
@@ -46,7 +51,7 @@ class HabitIconSelector extends StatelessWidget {
             child: Center(
               child: Icon(
                 habitIconData(icon),
-                size: 28,
+                size: iconSize,
                 color: isSelected ? AppColors.primary : AppColors.textPrimary,
               ),
             ),

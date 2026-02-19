@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import '../../../../../core/utils/responsive.dart';
 import '../bloc/habit_bloc.dart';
 import '../bloc/habit_state.dart';
 
@@ -15,7 +16,10 @@ class HabitSaveButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final buttonHeight = context.isTabletOrLarger ? 56.0 : 48.0;
+
     return SizedBox(
+      height: buttonHeight,
       width: double.infinity,
       child: BlocBuilder<HabitBloc, HabitState>(
         builder: (context, state) {
@@ -31,7 +35,10 @@ class HabitSaveButton extends StatelessWidget {
                       valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
                     ),
                   )
-                : Text(isEditMode ? 'Update Habit' : 'Create Habit'),
+                : Text(
+                    isEditMode ? 'Update Habit' : 'Create Habit',
+                    style: TextStyle(fontSize: context.fontSize(15)),
+                  ),
           );
         },
       ),
