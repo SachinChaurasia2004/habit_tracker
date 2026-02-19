@@ -35,7 +35,7 @@ class HabitIconSelector extends StatelessWidget {
             duration: const Duration(milliseconds: 150),
             decoration: BoxDecoration(
               color: isSelected
-                  ? AppColors.primary.withOpacity(0.15)
+                  ? AppColors.primary.withValues(alpha: 0.15)
                   : AppColors.cardBackground,
               borderRadius: BorderRadius.circular(12),
               border: Border.all(

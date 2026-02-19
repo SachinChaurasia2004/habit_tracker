@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:habit_tracker/core/utils/app_constants.dart';
+import 'package:habit_tracker/core/utils/responsive.dart';
 import '../../../../../core/theme/app_colors.dart';
 import '../../../tracking/presentation/bloc/tracking_bloc.dart';
 import '../../../tracking/presentation/bloc/tracking_state.dart';
@@ -14,7 +15,10 @@ class DailyGoalsCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.all(20),
+      padding: EdgeInsets.symmetric(
+        horizontal: context.pagePadding,
+        vertical: 0,
+      ),
       child: BlocBuilder<TrackingBloc, TrackingState>(
         builder: (context, trackingState) {
           double progress = 0.0;
@@ -34,7 +38,7 @@ class DailyGoalsCard extends StatelessWidget {
               final message = AppConstants.getMotivationalMessage(progress);
 
               return Container(
-                padding: const EdgeInsets.all(20),
+                padding: EdgeInsets.all(context.spacing(20)),
                 decoration: BoxDecoration(
                   color: AppColors.cardBackground,
                   borderRadius: BorderRadius.circular(20),
@@ -45,27 +49,27 @@ class DailyGoalsCard extends StatelessWidget {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Text(
+                          Text(
                             'Your Daily Goals',
                             style: TextStyle(
-                              fontSize: 18,
+                              fontSize: context.fontSize(18),
                               fontWeight: FontWeight.w600,
                               color: Colors.white,
                             ),
                           ),
-                          const SizedBox(height: 8),
+                          SizedBox(height: context.spacing(8)),
                           Text(
                             '$completed of $total habits completed today!',
                             style: TextStyle(
-                              fontSize: 14,
+                              fontSize: context.fontSize(14),
                               color: AppColors.textSecondary,
                             ),
                           ),
-                          const SizedBox(height: 12),
+                          SizedBox(height: context.spacing(12)),
                           Text(
                             message,
-                            style: const TextStyle(
-                              fontSize: 14,
+                            style: TextStyle(
+                              fontSize: context.fontSize(14),
                               fontWeight: FontWeight.w600,
                               color: Colors.white,
                             ),

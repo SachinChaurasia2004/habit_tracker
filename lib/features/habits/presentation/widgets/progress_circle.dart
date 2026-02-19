@@ -1,35 +1,30 @@
 import 'package:flutter/material.dart';
 import 'dart:math' as math;
 import '../../../../core/theme/app_colors.dart';
+import '../../../../core/utils/responsive.dart';
 
 class ProgressCircle extends StatelessWidget {
-  final double progress; // 0 to 100
+  const ProgressCircle({super.key, required this.progress});
 
-  const ProgressCircle({
-    super.key,
-    required this.progress,
-  });
+  final double progress;
 
   @override
   Widget build(BuildContext context) {
+    final size = context.isTabletOrLarger ? 120.0 : 100.0;
+
     return SizedBox(
-      width: 100,
-      height: 100,
+      width: size,
+      height: size,
       child: CustomPaint(
         painter: _ProgressCirclePainter(progress),
         child: Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Text(
-                '${progress.toInt()}%',
-                style: const TextStyle(
-                  fontSize: 24,
-                  fontWeight: FontWeight.bold,
-                  color: AppColors.textPrimary,
-                ),
-              ),
-            ],
+          child: Text(
+            '${progress.toInt()}%',
+            style: TextStyle(
+              fontSize: size * 0.24,
+              fontWeight: FontWeight.bold,
+              color: AppColors.textPrimary,
+            ),
           ),
         ),
       ),
@@ -38,45 +33,47 @@ class ProgressCircle extends StatelessWidget {
 }
 
 class _ProgressCirclePainter extends CustomPainter {
+  const _ProgressCirclePainter(this.progress);
+
   final double progress;
 
-  _ProgressCirclePainter(this.progress);
+  static const double _strokeRatio = 0.08;
 
   @override
   void paint(Canvas canvas, Size size) {
-    final center = Offset(size.width / 2, size.height / 2);
-    final radius = size.width / 2;
+    final center = size.center(Offset.zero);
+    final strokeWidth = size.width * _strokeRatio;
+    final radius = size.width / 2 - strokeWidth / 2;
+    final arcRect = Rect.fromCircle(center: center, radius: radius);
 
-    // Background circle
-    final backgroundPaint = Paint()
-      ..color = AppColors.surfaceVariant
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 8;
+    // Background track
+    canvas.drawCircle(
+      center,
+      radius,
+      Paint()
+        ..color = AppColors.surfaceVariant
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = strokeWidth,
+    );
 
-    canvas.drawCircle(center, radius - 4, backgroundPaint);
+    if (progress <= 0) return;
 
     // Progress arc
-    final progressPaint = Paint()
-      ..shader = const LinearGradient(
-        colors: AppColors.progressGradient,
-      ).createShader(Rect.fromCircle(center: center, radius: radius))
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 8
-      ..strokeCap = StrokeCap.round;
-
-    final sweepAngle = 2 * math.pi * (progress / 100);
-
     canvas.drawArc(
-      Rect.fromCircle(center: center, radius: radius - 4),
-      -math.pi / 2, // Start from top
-      sweepAngle,
+      arcRect,
+      -math.pi / 2,
+      2 * math.pi * (progress / 100).clamp(0.0, 1.0),
       false,
-      progressPaint,
+      Paint()
+        ..shader = LinearGradient(
+          colors: AppColors.progressGradient,
+        ).createShader(arcRect)
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = strokeWidth
+        ..strokeCap = StrokeCap.round,
     );
   }
 
   @override
-  bool shouldRepaint(_ProgressCirclePainter oldDelegate) {
-    return oldDelegate.progress != progress;
-  }
+  bool shouldRepaint(_ProgressCirclePainter old) => old.progress != progress;
 }

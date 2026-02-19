@@ -1,13 +1,20 @@
 import 'package:flutter/material.dart';
 import '../../../../core/theme/app_colors.dart';
+import '../../../../core/utils/responsive.dart';
 
 class HomeHeader extends StatelessWidget {
-  const HomeHeader({super.key});
+  final String username;
+  const HomeHeader({super.key, required this.username});
 
   @override
   Widget build(BuildContext context) {
+    final padding = context.pagePadding;
+
     return Padding(
-      padding: const EdgeInsets.all(20),
+      padding: EdgeInsets.symmetric(
+        horizontal: padding,
+        vertical: context.spacing(20),
+      ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
@@ -18,28 +25,38 @@ class HomeHeader extends StatelessWidget {
                 'Welcome back,',
                 style: TextStyle(fontSize: 14, color: AppColors.textSecondary),
               ),
-              const SizedBox(height: 4),
-              const Text(
-                'Sachin',
+              SizedBox(height: context.spacing(4)),
+              Text(
+                username,
                 style: TextStyle(
-                  fontSize: 30,
+                  fontSize: context.fontSize(30),
                   fontWeight: FontWeight.bold,
                   color: Colors.white,
                 ),
               ),
             ],
           ),
-          Container(
-            width: 48,
-            height: 48,
-            decoration: BoxDecoration(
-              color: AppColors.primary,
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: const Icon(Icons.person, color: Colors.white, size: 24),
-          ),
+          _AvatarButton(size: context.isTabletOrLarger ? 56 : 48),
         ],
       ),
+    );
+  }
+}
+class _AvatarButton extends StatelessWidget {
+  const _AvatarButton({required this.size});
+
+  final double size;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: size,
+      height: size,
+      decoration: BoxDecoration(
+        color: AppColors.primary,
+        borderRadius: BorderRadius.circular(size * 0.25),
+      ),
+      child: Icon(Icons.person, color: Colors.white, size: size * 0.5),
     );
   }
 }

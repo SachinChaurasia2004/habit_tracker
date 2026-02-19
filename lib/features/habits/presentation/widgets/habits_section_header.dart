@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../../../../core/utils/date_helper.dart';
+import '../../../../core/utils/responsive.dart';
 
 class HabitsSectionHeader extends StatelessWidget {
   const HabitsSectionHeader({super.key, required this.date});
@@ -16,11 +17,16 @@ class HabitsSectionHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.fromLTRB(20, 0, 20, 12),
+      padding: EdgeInsets.fromLTRB(
+        context.pagePadding,
+        context.spacing(20),
+        context.pagePadding,
+        context.spacing(12),
+      ),
       child: Text(
         _title,
-        style: const TextStyle(
-          fontSize: 20,
+        style: TextStyle(
+          fontSize: context.fontSize(20),
           fontWeight: FontWeight.bold,
           color: Colors.white,
         ),

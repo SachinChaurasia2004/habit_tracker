@@ -1,26 +1,31 @@
 import 'package:flutter/material.dart';
+import 'package:habit_tracker/core/utils/responsive.dart';
 import '../theme/app_colors.dart';
 
 class CustomBottomNavBar extends StatelessWidget {
-  final int currentIndex;
-  final Function(int) onTap;
-
   const CustomBottomNavBar({
     super.key,
     required this.currentIndex,
     required this.onTap,
   });
 
+  final int currentIndex;
+  final ValueChanged<int> onTap;
+
+  static const double _barHeight = 70;
+  static const double _fabCutoutWidth = 80;
+  static const double _fabCutoutHeight = 40;
+
   @override
   Widget build(BuildContext context) {
+    final cutoutLeft = context.screenWidth / 2 - _fabCutoutWidth / 2;
+    final iconSize = context.isTabletOrLarger ? 32.0 : 28.0;
+
     return Container(
-      height: 70,
+      height: _barHeight,
       decoration: BoxDecoration(
         color: AppColors.cardBackground,
-        borderRadius: const BorderRadius.only(
-          topLeft: Radius.circular(24),
-          topRight: Radius.circular(24),
-        ),
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.2),
@@ -30,81 +35,82 @@ class CustomBottomNavBar extends StatelessWidget {
         ],
       ),
       child: ClipRRect(
-        borderRadius: const BorderRadius.only(
-          topLeft: Radius.circular(24),
-          topRight: Radius.circular(24),
-        ),
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
         child: Stack(
           children: [
-            // Navigation Items Row
             Positioned.fill(
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
-                  _buildNavItem(
-                    icon: Icons.home,
-                    index: 0,
-                    isSelected: currentIndex == 0,
-                  ),
-                  _buildNavItem(
-                    icon: Icons.calendar_month,
-                    index: 1,
-                    isSelected: currentIndex == 1,
-                  ),
-                  // Space for FAB
-                  const SizedBox(width: 80),
-                  _buildNavItem(
-                    icon: Icons.bar_chart_rounded,
-                    index: 2,
-                    isSelected: currentIndex == 2,
-                  ),
-                  _buildNavItem(
-                    icon: Icons.person,
-                    index: 3,
-                    isSelected: currentIndex == 3,
-                  ),
+                  _NavItem(icon: Icons.home,             index: 0, currentIndex: currentIndex, onTap: onTap, iconSize: iconSize),
+                  _NavItem(icon: Icons.calendar_month,   index: 1, currentIndex: currentIndex, onTap: onTap, iconSize: iconSize),
+                  const SizedBox(width: _fabCutoutWidth),
+                  _NavItem(icon: Icons.bar_chart_rounded, index: 2, currentIndex: currentIndex, onTap: onTap, iconSize: iconSize),
+                  _NavItem(icon: Icons.person,           index: 3, currentIndex: currentIndex, onTap: onTap, iconSize: iconSize),
                 ],
               ),
             ),
-            // Cutout for FAB
             Positioned(
               top: 0,
-              left: MediaQuery.of(context).size.width / 2 - 40,
-              child: Container(
-                width: 80,
-                height: 40,
-                decoration: BoxDecoration(
-                  color: AppColors.background,
-                  borderRadius: const BorderRadius.only(
-                    bottomLeft: Radius.circular(40),
-                    bottomRight: Radius.circular(40),
-                  ),
-                ),
-              ),
+              left: cutoutLeft,
+              child: const _FabCutout(),
             ),
           ],
         ),
       ),
     );
   }
+}
 
-  Widget _buildNavItem({
-    required IconData icon,
-    required int index,
-    required bool isSelected,
-  }) {
+// ---------------------------------------------------------------------------
+// Sub-widgets
+// ---------------------------------------------------------------------------
+
+class _NavItem extends StatelessWidget {
+  const _NavItem({
+    required this.icon,
+    required this.index,
+    required this.currentIndex,
+    required this.onTap,
+    required this.iconSize,
+  });
+
+  final IconData icon;
+  final int index;
+  final int currentIndex;
+  final ValueChanged<int> onTap;
+  final double iconSize;
+
+  bool get _isSelected => currentIndex == index;
+
+  @override
+  Widget build(BuildContext context) {
     return Expanded(
       child: InkWell(
         onTap: () => onTap(index),
-        child: Container(
-          height: double.infinity,
-          alignment: Alignment.center,
+        child: SizedBox.expand(
           child: Icon(
             icon,
-            color: isSelected ? AppColors.primary : AppColors.textSecondary,
-            size: 28,
+            size: iconSize,
+            color: _isSelected ? AppColors.primary : AppColors.textSecondary,
           ),
         ),
+      ),
+    );
+  }
+}
+
+class _FabCutout extends StatelessWidget {
+  const _FabCutout();
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: CustomBottomNavBar._fabCutoutWidth,
+      height: CustomBottomNavBar._fabCutoutHeight,
+      decoration: const BoxDecoration(
+        color: AppColors.background,
+        borderRadius: BorderRadius.vertical(bottom: Radius.circular(40)),
       ),
     );
   }

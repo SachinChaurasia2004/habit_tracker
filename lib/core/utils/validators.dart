@@ -35,7 +35,7 @@ class Validators {
       return const ValidationFailure('Name cannot be empty');
     }
 
-    if (name.trim().length < 1) {
+    if (name.trim().isEmpty) {
       return const ValidationFailure('Name must be at least 1 character');
     }
 

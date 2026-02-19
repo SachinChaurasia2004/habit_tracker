@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/utils/date_helper.dart';
+import '../../../../core/utils/responsive.dart';
 import '../../../tracking/presentation/bloc/tracking_bloc.dart';
 import '../../../tracking/presentation/bloc/tracking_event.dart';
 import '../bloc/habit_bloc.dart';
@@ -51,33 +52,50 @@ class _HomePageState extends State<HomePage> {
 
   @override
   Widget build(BuildContext context) {
+    final maxWidth = context.contentMaxWidth;
+
     return Scaffold(
       backgroundColor: AppColors.background,
       body: SafeArea(
-        child: RefreshIndicator(
-          onRefresh: () async => _loadData(),
-          child: BlocListener<HabitBloc, HabitState>(
-            listener: _onHabitStateChanged,
-            child: CustomScrollView(
-              slivers: [
-                const SliverToBoxAdapter(child: HomeHeader()),
-                SliverToBoxAdapter(
-                  child: DateSelectorWidget(
-                    currentDate: _currentDate,
-                    onDateChanged: _onDateChanged,
-                  ),
+        child: Center(
+          child: ConstrainedBox(
+            constraints: BoxConstraints(maxWidth: maxWidth),
+            child: RefreshIndicator(
+              onRefresh: () async => _loadData(),
+              child: BlocListener<HabitBloc, HabitState>(
+                listener: _onHabitStateChanged,
+                child: CustomScrollView(
+                  slivers: [
+                    SliverToBoxAdapter(
+                      child: HomeHeader(
+                        username:
+                            'Sachin', // TODO: Replace with dynamic user name
+                      ),
+                    ),
+                    SliverToBoxAdapter(
+                      child: DateSelectorWidget(
+                        currentDate: _currentDate,
+                        onDateChanged: _onDateChanged,
+                      ),
+                    ),
+                    SliverToBoxAdapter(
+                      child: SizedBox(height: context.spacing(20)),
+                    ),
+                    const SliverToBoxAdapter(child: DailyGoalsCard()),
+                    SliverToBoxAdapter(
+                      child: HabitsSectionHeader(date: _currentDate),
+                    ),
+                    HabitsSliverList(
+                      currentDate: _currentDate,
+                      onDeleteRequested: (ctx, id) =>
+                          DeleteHabitDialog.show(ctx, id),
+                    ),
+                    SliverToBoxAdapter(
+                      child: SizedBox(height: context.spacing(100)),
+                    ),
+                  ],
                 ),
-                const SliverToBoxAdapter(child: DailyGoalsCard()),
-                SliverToBoxAdapter(
-                  child: HabitsSectionHeader(date: _currentDate),
-                ),
-                HabitsSliverList(
-                  currentDate: _currentDate,
-                  onDeleteRequested: (ctx, id) =>
-                      DeleteHabitDialog.show(ctx, id),
-                ),
-                const SliverToBoxAdapter(child: SizedBox(height: 100)),
-              ],
+              ),
             ),
           ),
         ),
