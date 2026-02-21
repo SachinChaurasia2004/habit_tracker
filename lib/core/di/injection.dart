@@ -13,12 +13,16 @@ import '../../features/habits/domain/usecases/get_active_habits.dart';
 import '../../features/habits/domain/usecases/update_habit.dart';
 import '../../features/habits/domain/usecases/delete_habit.dart';
 import '../../features/tracking/domain/repositories/tracking_repository.dart';
+import '../../features/tracking/domain/usecases/get_habit_performance.dart';
+import '../../features/tracking/domain/usecases/get_overall_stats.dart';
+import '../../features/tracking/domain/usecases/get_weekly_stats.dart';
 import '../../features/tracking/domain/usecases/toggle_habit_completion.dart';
 import '../../features/tracking/domain/usecases/get_daily_entries.dart';
 import '../../features/tracking/domain/usecases/calculate_streak.dart';
 import '../../features/tracking/domain/usecases/get_daily_progress.dart';
 import '../../features/tracking/domain/usecases/get_entries_for_habit.dart';
 import '../../features/habits/presentation/bloc/habit_bloc.dart';
+import '../../features/tracking/presentation/bloc/stats_bloc.dart';
 import '../../features/tracking/presentation/bloc/tracking_bloc.dart';
 import '../utils/app_constants.dart';
 
@@ -62,14 +66,36 @@ Future<void> setupDependencies() async {
     () => DeleteHabit(habitRepository: getIt(), trackingRepository: getIt()),
   );
 
-  // USE CASES - TRACKING 
+  // USE CASES - TRACKING
   getIt.registerLazySingleton(() => ToggleHabitCompletion(getIt()));
   getIt.registerLazySingleton(() => GetDailyEntries(getIt()));
   getIt.registerLazySingleton(() => CalculateStreak(getIt()));
   getIt.registerLazySingleton(() => GetDailyProgress(getIt()));
   getIt.registerLazySingleton(() => GetEntriesForHabit(getIt()));
 
-  // BLOCS 
+  // ========== USE CASES - STATISTICS ==========
+  getIt.registerLazySingleton(
+    () => GetOverallStatistics(
+      trackingRepository: getIt(),
+      habitRepository: getIt(),
+    ),
+  );
+
+  getIt.registerLazySingleton(
+    () => GetWeeklyStatistics(
+      trackingRepository: getIt(),
+      habitRepository: getIt(),
+    ),
+  );
+
+  getIt.registerLazySingleton(
+    () => GetHabitPerformance(
+      trackingRepository: getIt(),
+      habitRepository: getIt(),
+    ),
+  );
+
+  // BLOCS
   getIt.registerFactory(
     () => HabitBloc(
       createHabit: getIt(),
@@ -87,6 +113,15 @@ Future<void> setupDependencies() async {
       calculateStreak: getIt(),
       getDailyProgress: getIt(),
       getActiveHabits: getIt(),
+    ),
+  );
+
+   // ========== BLOCS - STATISTICS ==========
+  getIt.registerFactory(
+    () => StatisticsBloc(
+      getOverallStatistics: getIt(),
+      getWeeklyStatistics: getIt(),
+      getHabitPerformance: getIt(),
     ),
   );
 }

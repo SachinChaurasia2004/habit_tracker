@@ -1,6 +1,7 @@
 import 'package:dartz/dartz.dart';
 import '../../../../core/error/exceptions.dart';
 import '../../../../core/error/failures.dart';
+import '../../../../core/utils/date_helper.dart';
 import '../../../habits/domain/repositories/habit_repository.dart';
 import '../../domain/entities/habit_entry.dart';
 import '../../domain/repositories/tracking_repository.dart';
@@ -275,4 +276,35 @@ Future<Either<Failure, int>> calculateStreak(String habitId) async {
       return Left(UnexpectedFailure(e.toString()));
     }
   }
+
+  @override
+Future<Either<Failure, List<HabitEntry>>> getAllEntriesInRange({
+  required DateTime startDate,
+  required DateTime endDate,
+}) async {
+  try {
+    // Normalize dates for comparison
+    final normalizedStart = DateHelper.normalize(startDate);
+    final normalizedEnd = DateHelper.normalize(endDate);
+
+    // Get ALL entries from the data source (single query)
+    final allModels = await localDataSource.getAllEntries();
+
+    // Filter entries within the date range using functional programming
+    final filteredModels = allModels.where((model) {
+      final entryDate = DateHelper.normalize(model.date);
+      return !entryDate.isBefore(normalizedStart) && 
+             !entryDate.isAfter(normalizedEnd);
+    }).toList();
+
+    // Convert to entities
+    final entries = filteredModels.map((model) => model.toEntity()).toList();
+
+    return Right(entries);
+  } on CacheException catch (e) {
+    return Left(CacheFailure(e.message));
+  } catch (e) {
+    return Left(UnexpectedFailure(e.toString()));
+  }
+}
 }

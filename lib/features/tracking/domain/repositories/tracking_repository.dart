@@ -46,4 +46,9 @@ abstract class TrackingRepository {
 
   /// Gets the completion percentage for a specific date
   Future<Either<Failure, double>> getDailyCompletionPercentage(DateTime date);
+
+  Future<Either<Failure, List<HabitEntry>>> getAllEntriesInRange({
+    required DateTime startDate,
+    required DateTime endDate,
+  });
 }

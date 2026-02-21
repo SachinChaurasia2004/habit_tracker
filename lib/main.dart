@@ -7,10 +7,10 @@ import 'core/theme/app_theme.dart';
 import 'core/theme/app_colors.dart';
 import 'core/navigation/main_navigation.dart';
 import 'features/habits/presentation/bloc/habit_bloc.dart';
+import 'features/tracking/presentation/bloc/stats_bloc.dart';
 import 'features/tracking/presentation/bloc/tracking_bloc.dart';
 
 void main() async {
-  
   WidgetsFlutterBinding.ensureInitialized();
 
   SystemChrome.setSystemUIOverlayStyle(
@@ -41,12 +41,9 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MultiBlocProvider(
       providers: [
-        BlocProvider(
-          create: (context) => getIt<HabitBloc>(),
-        ),
-        BlocProvider(
-          create: (context) => getIt<TrackingBloc>(),
-        ),
+        BlocProvider(create: (context) => getIt<HabitBloc>()),
+        BlocProvider(create: (context) => getIt<TrackingBloc>()),
+        BlocProvider(create: (context) => getIt<StatisticsBloc>()),
       ],
       child: MaterialApp(
         title: 'Habit Tracker',
@@ -57,4 +54,3 @@ class MyApp extends StatelessWidget {
     );
   }
 }
-

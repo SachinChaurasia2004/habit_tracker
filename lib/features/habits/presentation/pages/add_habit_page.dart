@@ -159,9 +159,7 @@ class _AddHabitPageState extends State<AddHabitPage> {
   }
 }
 
-// ---------------------------------------------------------------------------
 // Layouts
-// ---------------------------------------------------------------------------
 
 class _PhoneLayout extends StatelessWidget {
   const _PhoneLayout({
