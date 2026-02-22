@@ -22,8 +22,10 @@ import '../../features/tracking/domain/usecases/calculate_streak.dart';
 import '../../features/tracking/domain/usecases/get_daily_progress.dart';
 import '../../features/tracking/domain/usecases/get_entries_for_habit.dart';
 import '../../features/habits/presentation/bloc/habit_bloc.dart';
+import '../../features/tracking/presentation/bloc/calendar_bloc.dart';
 import '../../features/tracking/presentation/bloc/stats_bloc.dart';
 import '../../features/tracking/presentation/bloc/tracking_bloc.dart';
+import '../../features/tracking/domain/usecases/get_monthly_completion.dart';
 import '../utils/app_constants.dart';
 
 final getIt = GetIt.instance;
@@ -95,6 +97,14 @@ Future<void> setupDependencies() async {
     ),
   );
 
+  getIt.registerLazySingleton(
+  () => GetMonthlyCompletion(
+    trackingRepository: getIt(),
+    habitRepository: getIt(),
+  ),
+);
+
+
   // BLOCS
   getIt.registerFactory(
     () => HabitBloc(
@@ -124,6 +134,15 @@ Future<void> setupDependencies() async {
       getHabitPerformance: getIt(),
     ),
   );
+
+  getIt.registerFactory(
+    () => CalendarBloc(
+      getMonthlyCompletion: getIt(),
+      getActiveHabits: getIt(),
+      trackingRepository: getIt(),
+    ),
+  );
+
 }
 
 /// Reset all dependencies (for testing)

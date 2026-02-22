@@ -45,7 +45,7 @@ class StatisticsBloc extends Bloc<StatisticsEvent, StatisticsState> {
 
       final overallStats = overallResult.fold((l) => null, (r) => r)!;
 
-      // Get weekly stats (always last 7 days for the chart)
+      // Get weekly stats
       final weeklyResult = await getWeeklyStatistics(
         const GetWeeklyStatisticsParams(),
       );
