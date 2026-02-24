@@ -41,8 +41,20 @@ class StatisticsLoaded extends StatisticsState {
       ];
 
   // Helper getters
-  List<HabitPerformance> get topPerformers => 
-      habitPerformances.take(3).toList();
+  List<HabitPerformance> get topPerformers {
+    // Prioritize habits with an active streak, sorted by current streak
+    // and then by completion rate as a tiebreaker.
+    final withStreak = habitPerformances
+        .where((h) => h.currentStreak > 0)
+        .toList()
+      ..sort((a, b) {
+        final streakCompare = b.currentStreak.compareTo(a.currentStreak);
+        if (streakCompare != 0) return streakCompare;
+        return b.completionRate.compareTo(a.completionRate);
+      });
+
+    return withStreak.take(3).toList();
+  }
 
   List<HabitPerformance> get needsAttention =>
       habitPerformances.where((h) => h.completionRate < 50).toList();

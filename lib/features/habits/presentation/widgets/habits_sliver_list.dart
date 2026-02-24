@@ -5,6 +5,8 @@ import '../../../../core/utils/responsive.dart';
 import '../../../tracking/presentation/bloc/tracking_bloc.dart';
 import '../../../tracking/presentation/bloc/tracking_event.dart';
 import '../../../tracking/presentation/bloc/tracking_state.dart';
+import '../../../tracking/presentation/bloc/stats_bloc.dart';
+import '../../../tracking/presentation/bloc/stats_event.dart';
 import '../bloc/habit_bloc.dart';
 import '../bloc/habit_state.dart';
 import '../pages/add_habit_page.dart';
@@ -126,6 +128,7 @@ class HabitsSliverList extends StatelessWidget {
         context.read<TrackingBloc>().add(
           ToggleHabitCompletionEvent(habitId: habit.id, date: DateTime.now()),
         );
+        context.read<StatisticsBloc>().add(const RefreshStatisticsEvent());
       },
       onEdit: () => Navigator.push(
         context,
