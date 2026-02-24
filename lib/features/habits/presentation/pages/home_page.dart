@@ -3,6 +3,11 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/utils/date_helper.dart';
 import '../../../../core/utils/responsive.dart';
+import '../../../tracking/presentation/bloc/calendar_bloc.dart';
+import '../../../tracking/presentation/bloc/calendar_event.dart';
+import '../../../tracking/presentation/bloc/calendar_state.dart';
+import '../../../tracking/presentation/bloc/stats_bloc.dart';
+import '../../../tracking/presentation/bloc/stats_event.dart';
 import '../../../tracking/presentation/bloc/tracking_bloc.dart';
 import '../../../tracking/presentation/bloc/tracking_event.dart';
 import '../bloc/habit_bloc.dart';
@@ -46,7 +51,14 @@ class _HomePageState extends State<HomePage> {
     if (state is HabitCreated ||
         state is HabitUpdated ||
         state is HabitDeleted) {
+      final calendarState = context.read<CalendarBloc>().state;
+      final refreshMonth = calendarState is CalendarLoaded
+          ? calendarState.selectedDate
+          : _currentDate;
+
       context.read<TrackingBloc>().add(LoadDateTrackingEvent(_currentDate));
+      context.read<StatisticsBloc>().add(const RefreshStatisticsEvent());
+      context.read<CalendarBloc>().add(RefreshCalendarEvent(refreshMonth));
     }
   }
 

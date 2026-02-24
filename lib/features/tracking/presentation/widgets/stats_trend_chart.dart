@@ -53,7 +53,7 @@ class TrendChart extends StatelessWidget {
                           TextSpan(
                             text: '${dayCompletion.percentage.toInt()}%',
                             style: TextStyle(
-                              color: AppColors.primary,
+                              color: AppColors.textSecondary,
                               fontSize: 12,
                               fontWeight: FontWeight.normal,
                             ),
