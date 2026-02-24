@@ -105,8 +105,8 @@ class _StatsPageState extends State<StatsPage> {
                   ElevatedButton(
                     onPressed: () {
                       context.read<StatisticsBloc>().add(
-                            const RefreshStatisticsEvent(),
-                          );
+                        const RefreshStatisticsEvent(),
+                      );
                     },
                     child: const Text('Retry'),
                   ),
@@ -151,8 +151,8 @@ class _StatsPageState extends State<StatsPage> {
             return RefreshIndicator(
               onRefresh: () async {
                 context.read<StatisticsBloc>().add(
-                      const RefreshStatisticsEvent(),
-                    );
+                  const RefreshStatisticsEvent(),
+                );
               },
               child: ListView(
                 padding: EdgeInsets.all(context.pagePadding),
@@ -180,4 +180,3 @@ class _StatsPageState extends State<StatsPage> {
     );
   }
 }
-

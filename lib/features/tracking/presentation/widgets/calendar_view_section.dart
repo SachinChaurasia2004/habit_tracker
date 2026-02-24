@@ -13,6 +13,7 @@ class CalendarView extends StatelessWidget {
   final void Function(DateTime selectedDay, DateTime focusedDay) onDaySelected;
   final ValueChanged<CalendarFormat> onFormatChanged;
   final ValueChanged<DateTime> onPageChanged;
+  final Color? habitColor;
 
   const CalendarView({
     super.key,
@@ -23,6 +24,7 @@ class CalendarView extends StatelessWidget {
     required this.onDaySelected,
     required this.onFormatChanged,
     required this.onPageChanged,
+    this.habitColor,
   });
 
   @override
@@ -180,14 +182,15 @@ class CalendarView extends StatelessWidget {
   }
 
   Color _getHeatmapColor(double completionRate) {
+    final baseColor = habitColor ?? AppColors.success;
     if (completionRate >= 80) {
-      return AppColors.success;
+      return baseColor;
     } else if (completionRate >= 60) {
-      return AppColors.success.withOpacity(0.7);
+      return baseColor.withOpacity(0.7);
     } else if (completionRate >= 40) {
-      return AppColors.success.withOpacity(0.5);
+      return baseColor.withOpacity(0.5);
     } else if (completionRate >= 20) {
-      return AppColors.success.withOpacity(0.3);
+      return baseColor.withOpacity(0.3);
     } else {
       return AppColors.surfaceVariant;
     }

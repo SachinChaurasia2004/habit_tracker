@@ -7,10 +7,9 @@ import '../../../../core/utils/responsive.dart';
 import '../bloc/calendar_bloc.dart';
 import '../bloc/calendar_event.dart';
 import '../bloc/calendar_state.dart';
-import '../widgets/calendar_view.dart';
-import '../widgets/heatmap_legend.dart';
-import '../widgets/monthly_stats_card.dart';
-import '../widgets/selected_day_habits_section.dart';
+import '../widgets/calendar_habit_selector.dart';
+import '../widgets/calendar_view_section.dart';
+import '../widgets/calendar_monthly_stats_card.dart';
 
 class CalendarPage extends StatefulWidget {
   const CalendarPage({super.key});
@@ -45,8 +44,8 @@ class _CalendarPageState extends State<CalendarPage> {
             icon: const Icon(Icons.refresh),
             onPressed: () {
               context.read<CalendarBloc>().add(
-                    RefreshCalendarEvent(_focusedDay),
-                  );
+                RefreshCalendarEvent(_focusedDay),
+              );
             },
           ),
         ],
@@ -71,8 +70,8 @@ class _CalendarPageState extends State<CalendarPage> {
                   ElevatedButton(
                     onPressed: () {
                       context.read<CalendarBloc>().add(
-                            LoadMonthCompletionEvent(_focusedDay),
-                          );
+                        LoadMonthCompletionEvent(_focusedDay),
+                      );
                     },
                     child: const Text('Retry'),
                   ),
@@ -82,13 +81,40 @@ class _CalendarPageState extends State<CalendarPage> {
           }
 
           if (state is CalendarLoaded) {
+            final habits = state.habitsForSelectedDate
+                .map((h) => h.habit)
+                .toList();
+
             return Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
+                if (habits.isNotEmpty)
+                  Padding(
+                    padding: EdgeInsets.symmetric(
+                      horizontal: context.pagePadding,
+                      vertical: context.spacing(8),
+                    ),
+                    child: CalendarHabitSelector(
+                      habits: habits,
+                      selectedHabitId: state.selectedHabit?.id,
+                      onHabitSelected: (habitId) {
+                        context.read<CalendarBloc>().add(
+                          LoadMonthCompletionEvent(
+                            _focusedDay,
+                            selectedHabitId: habitId,
+                          ),
+                        );
+                      },
+                    ),
+                  ),
                 CalendarView(
                   focusedDay: _focusedDay,
                   selectedDay: _selectedDay,
                   calendarFormat: _calendarFormat,
                   completionData: state.completionData,
+                  habitColor: state.selectedHabit != null
+                      ? Color(state.selectedHabit!.colorCode)
+                      : null,
                   onDaySelected: (selectedDay, focusedDay) {
                     if (selectedDay.isAfter(DateTime.now())) {
                       _showFutureDateMessage();
@@ -101,8 +127,8 @@ class _CalendarPageState extends State<CalendarPage> {
                     });
 
                     context.read<CalendarBloc>().add(
-                          LoadDateHabitsEvent(_selectedDay!),
-                        );
+                      LoadDateHabitsEvent(_selectedDay!),
+                    );
                   },
                   onFormatChanged: (format) {
                     setState(() {
@@ -114,21 +140,16 @@ class _CalendarPageState extends State<CalendarPage> {
                       _focusedDay = focusedDay;
                     });
                     context.read<CalendarBloc>().add(
-                          LoadMonthCompletionEvent(focusedDay),
-                        );
+                      LoadMonthCompletionEvent(
+                        focusedDay,
+                        selectedHabitId: state.selectedHabit?.id,
+                      ),
+                    );
                   },
                 ),
                 SizedBox(height: context.spacing(16)),
-                const HeatmapLegend(),
-                SizedBox(height: context.spacing(16)),
                 MonthlyStatsCard(stats: state.monthStats),
                 SizedBox(height: context.spacing(16)),
-                Expanded(
-                  child: SelectedDayHabitsSection(
-                    selectedDate: state.selectedDate,
-                    habits: state.habitsForSelectedDate,
-                  ),
-                ),
               ],
             );
           }
@@ -145,9 +166,7 @@ class _CalendarPageState extends State<CalendarPage> {
         content: const Text('Cannot select future dates'),
         backgroundColor: AppColors.warning,
         behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(8),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
         duration: const Duration(seconds: 2),
       ),
     );

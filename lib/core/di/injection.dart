@@ -98,13 +98,10 @@ Future<void> setupDependencies() async {
   );
 
   getIt.registerLazySingleton(
-  () => GetMonthlyCompletion(
-    trackingRepository: getIt(),
-    habitRepository: getIt(),
-  ),
-);
-
-
+    () => GetMonthlyCompletion(
+      trackingRepository: getIt(),
+    ),
+  );
   // BLOCS
   getIt.registerFactory(
     () => HabitBloc(

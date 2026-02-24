@@ -21,12 +21,14 @@ class CalendarLoaded extends CalendarState {
   final List<HabitWithStatus> habitsForSelectedDate;
   final DateTime selectedDate;
   final MonthStats monthStats;
+  final Habit? selectedHabit;
 
   const CalendarLoaded({
     required this.completionData,
     required this.habitsForSelectedDate,
     required this.selectedDate,
     required this.monthStats,
+    required this.selectedHabit,
   });
 
   @override
@@ -35,6 +37,7 @@ class CalendarLoaded extends CalendarState {
         habitsForSelectedDate,
         selectedDate,
         monthStats,
+        selectedHabit,
       ];
 
   CalendarLoaded copyWith({
@@ -42,12 +45,14 @@ class CalendarLoaded extends CalendarState {
     List<HabitWithStatus>? habitsForSelectedDate,
     DateTime? selectedDate,
     MonthStats? monthStats,
+    Habit? selectedHabit,
   }) {
     return CalendarLoaded(
       completionData: completionData ?? this.completionData,
       habitsForSelectedDate: habitsForSelectedDate ?? this.habitsForSelectedDate,
       selectedDate: selectedDate ?? this.selectedDate,
       monthStats: monthStats ?? this.monthStats,
+      selectedHabit: selectedHabit ?? this.selectedHabit,
     );
   }
 }

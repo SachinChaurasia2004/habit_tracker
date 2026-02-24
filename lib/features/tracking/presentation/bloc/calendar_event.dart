@@ -10,11 +10,15 @@ abstract class CalendarEvent extends Equatable {
 /// Load completion data for a month
 class LoadMonthCompletionEvent extends CalendarEvent {
   final DateTime month;
+  final String? selectedHabitId;
 
-  const LoadMonthCompletionEvent(this.month);
+  const LoadMonthCompletionEvent(
+    this.month, {
+    this.selectedHabitId,
+  });
 
   @override
-  List<Object?> get props => [month];
+  List<Object?> get props => [month, selectedHabitId];
 }
 
 /// Load habits for a specific date

@@ -25,12 +25,39 @@ class CalendarBloc extends Bloc<CalendarEvent, CalendarState> {
     LoadMonthCompletionEvent event,
     Emitter<CalendarState> emit,
   ) async {
+    final previousState = state;
     emit(const CalendarLoading());
 
     try {
-      // Get completion data for the month
+      // Load habits for today
+      final today = DateHelper.normalize(DateTime.now());
+      final habitsWithStatus = await _getHabitsForDate(today);
+
+      if (habitsWithStatus.isEmpty) {
+        emit(const CalendarError('No active habits to show on calendar.'));
+        return;
+      }
+
+      // Determine selected habit (from event, previous state, or default)
+      String? selectedHabitId = event.selectedHabitId;
+      if (selectedHabitId == null && previousState is CalendarLoaded) {
+        selectedHabitId = previousState.selectedHabit?.id;
+      }
+      selectedHabitId ??= habitsWithStatus.first.habit.id;
+
+      final selectedHabit = habitsWithStatus
+          .firstWhere(
+            (hws) => hws.habit.id == selectedHabitId,
+            orElse: () => habitsWithStatus.first,
+          )
+          .habit;
+
+      // Get completion data for the selected habit in the month
       final completionResult = await getMonthlyCompletion(
-        GetMonthlyCompletionParams(month: event.month),
+        GetMonthlyCompletionParams(
+          month: event.month,
+          habitId: selectedHabit.id,
+        ),
       );
 
       if (completionResult.isLeft()) {
@@ -40,21 +67,18 @@ class CalendarBloc extends Bloc<CalendarEvent, CalendarState> {
         return;
       }
 
-        final Map<String, double> completionData =
+      final Map<String, double> completionData =
           completionResult.fold((l) => <String, double>{}, (r) => r);
 
-      // Calculate month stats
+      // Calculate month stats for the selected habit
       final monthStats = _calculateMonthStats(completionData);
-
-      // Load habits for today
-      final today = DateHelper.normalize(DateTime.now());
-      final habitsWithStatus = await _getHabitsForDate(today);
 
       emit(CalendarLoaded(
         completionData: completionData,
         habitsForSelectedDate: habitsWithStatus,
         selectedDate: today,
         monthStats: monthStats,
+        selectedHabit: selectedHabit,
       ));
     } catch (e) {
       emit(CalendarError('Failed to load calendar: ${e.toString()}'));
@@ -87,7 +111,18 @@ class CalendarBloc extends Bloc<CalendarEvent, CalendarState> {
     RefreshCalendarEvent event,
     Emitter<CalendarState> emit,
   ) async {
-    add(LoadMonthCompletionEvent(event.month));
+    String? selectedHabitId;
+    final currentState = state;
+    if (currentState is CalendarLoaded) {
+      selectedHabitId = currentState.selectedHabit?.id;
+    }
+
+    add(
+      LoadMonthCompletionEvent(
+        event.month,
+        selectedHabitId: selectedHabitId,
+      ),
+    );
   }
 
   Future<List<HabitWithStatus>> _getHabitsForDate(DateTime date) async {

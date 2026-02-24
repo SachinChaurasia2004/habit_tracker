@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:habit_tracker/features/tracking/presentation/bloc/calendar_bloc.dart';
 import '../../../../../core/theme/app_colors.dart';
 import '../../../../core/utils/responsive.dart';
+import '../../../tracking/presentation/bloc/calendar_event.dart';
 import '../../../tracking/presentation/bloc/tracking_bloc.dart';
 import '../../../tracking/presentation/bloc/tracking_event.dart';
 import '../../../tracking/presentation/bloc/tracking_state.dart';
@@ -129,6 +131,7 @@ class HabitsSliverList extends StatelessWidget {
           ToggleHabitCompletionEvent(habitId: habit.id, date: DateTime.now()),
         );
         context.read<StatisticsBloc>().add(const RefreshStatisticsEvent());
+        context.read<CalendarBloc>().add(RefreshCalendarEvent(currentDate));
       },
       onEdit: () => Navigator.push(
         context,
