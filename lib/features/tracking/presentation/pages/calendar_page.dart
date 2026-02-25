@@ -107,6 +107,7 @@ class _CalendarPageState extends State<CalendarPage> {
                       },
                     ),
                   ),
+                SizedBox(height: context.spacing(24)),
                 CalendarView(
                   focusedDay: _focusedDay,
                   selectedDay: _selectedDay,

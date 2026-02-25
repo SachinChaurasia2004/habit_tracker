@@ -113,8 +113,10 @@ class CalendarView extends StatelessWidget {
             fontWeight: FontWeight.bold,
           ),
           leftChevronIcon: const Icon(Icons.chevron_left, color: Colors.white),
-          rightChevronIcon:
-              const Icon(Icons.chevron_right, color: Colors.white),
+          rightChevronIcon: const Icon(
+            Icons.chevron_right,
+            color: Colors.white,
+          ),
         ),
         daysOfWeekStyle: DaysOfWeekStyle(
           weekdayStyle: TextStyle(
@@ -148,33 +150,34 @@ class CalendarView extends StatelessWidget {
       cellColor = Colors.transparent;
     } else if (isSelected) {
       cellColor = AppColors.primary;
-    } else if (isToday) {
-      cellColor = AppColors.primary.withOpacity(0.3);
     } else if (completionRate > 0) {
       cellColor = _getHeatmapColor(completionRate);
     } else {
       cellColor = AppColors.surfaceVariant;
     }
 
-    return Container(
-      decoration: BoxDecoration(
-        color: cellColor,
-        borderRadius: BorderRadius.circular(8),
-        border: isToday && !isSelected
-            ? Border.all(color: AppColors.primary, width: 2)
-            : null,
-      ),
-      child: Center(
-        child: Text(
-          '${day.day}',
-          style: TextStyle(
-            color: isOutside
-                ? AppColors.textSecondary.withOpacity(0.3)
-                : isSelected || (completionRate > 75)
-                    ? Colors.white
-                    : Colors.white70,
-            fontSize: context.fontSize(14),
-            fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+    return Padding(
+      padding: const EdgeInsets.all(2.0),
+      child: Container(
+        decoration: BoxDecoration(
+          color: cellColor,
+          borderRadius: BorderRadius.circular(8),
+          border: isToday && !isSelected
+              ? Border.all(color: AppColors.primary, width: 2)
+              : null,
+        ),
+        child: Center(
+          child: Text(
+            '${day.day}',
+            style: TextStyle(
+              color: isOutside
+                  ? AppColors.textSecondary.withOpacity(0.3)
+                  : isSelected || (completionRate > 75)
+                  ? Colors.white
+                  : Colors.white70,
+              fontSize: context.fontSize(14),
+              fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+            ),
           ),
         ),
       ),
@@ -196,4 +199,3 @@ class CalendarView extends StatelessWidget {
     }
   }
 }
-

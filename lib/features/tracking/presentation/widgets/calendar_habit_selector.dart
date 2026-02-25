@@ -21,66 +21,41 @@ class CalendarHabitSelector extends StatefulWidget {
 class _CalendarHabitSelectorState extends State<CalendarHabitSelector> {
   final ScrollController _scrollController = ScrollController();
 
-  bool _canScrollLeft = false;
-  bool _canScrollRight = true;
-
   @override
   void initState() {
     super.initState();
-
-    _scrollController.addListener(_updateArrowState);
-
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      _updateArrowState();
       _centerSelectedHabit();
     });
   }
 
-  void _updateArrowState() {
-    if (!_scrollController.hasClients) return;
-
-    setState(() {
-      _canScrollLeft = _scrollController.offset > 0;
-      _canScrollRight =
-          _scrollController.offset < _scrollController.position.maxScrollExtent;
-    });
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
   }
 
-  void _scrollLeft() {
-    _scrollController.animateTo(
-      (_scrollController.offset - 200).clamp(
-        0,
-        _scrollController.position.maxScrollExtent,
-      ),
-      duration: const Duration(milliseconds: 300),
-      curve: Curves.easeOut,
-    );
-  }
-
-  void _scrollRight() {
-    _scrollController.animateTo(
-      (_scrollController.offset + 200).clamp(
-        0,
-        _scrollController.position.maxScrollExtent,
-      ),
-      duration: const Duration(milliseconds: 300),
-      curve: Curves.easeOut,
-    );
-  }
-
-  /// Auto center selected habit
   void _centerSelectedHabit() {
+    if (widget.selectedHabitId == null || !_scrollController.hasClients) {
+      return;
+    }
+
     final index = widget.habits.indexWhere(
       (h) => h.id == widget.selectedHabitId,
     );
 
-    if (index == -1 || !_scrollController.hasClients) return;
+    if (index == -1) return;
 
-    final offset = index * 120.0;
+    final screenWidth = MediaQuery.of(context).size.width;
+    final itemWidth = 100.0;
+    final spacing = 8.0;
+
+    final offset =
+        (index * (itemWidth + spacing)) - (screenWidth / 2) + (itemWidth / 2);
 
     _scrollController.animateTo(
-      offset,
-      duration: const Duration(milliseconds: 400),
+      offset.clamp(0.0, _scrollController.position.maxScrollExtent),
+      duration: const Duration(milliseconds: 300),
       curve: Curves.easeOut,
     );
   }
@@ -97,131 +72,56 @@ class _CalendarHabitSelectorState extends State<CalendarHabitSelector> {
 
   @override
   Widget build(BuildContext context) {
+    if (widget.habits.isEmpty) {
+      return const SizedBox.shrink();
+    }
+
     return SizedBox(
-      height: context.spacing(52),
-      child: Stack(
-        children: [
-          Row(
-            children: [
-              /// LEFT ARROW
-              AnimatedOpacity(
-                duration: const Duration(milliseconds: 200),
-                opacity: _canScrollLeft ? 1 : 0.3,
-                child: IconButton(
-                  onPressed: _canScrollLeft ? _scrollLeft : null,
-                  icon: const Icon(
-                    Icons.arrow_back_ios,
-                    size: 18,
-                    color: Colors.white,
-                  ),
+      height: 50,
+      child: ListView.separated(
+        controller: _scrollController,
+        scrollDirection: Axis.horizontal,
+        physics: const BouncingScrollPhysics(),
+        padding: EdgeInsets.symmetric(horizontal: context.pagePadding),
+        itemCount: widget.habits.length,
+        separatorBuilder: (_, __) => SizedBox(width: context.spacing(8)),
+        itemBuilder: (context, index) {
+          final habit = widget.habits[index];
+          final isSelected = habit.id == widget.selectedHabitId;
+          final color = Color(habit.colorCode);
+
+          return GestureDetector(
+            onTap: () => widget.onHabitSelected(habit.id),
+            child: AnimatedContainer(
+              duration: const Duration(milliseconds: 200),
+              curve: Curves.easeOut,
+              padding: EdgeInsets.symmetric(
+                horizontal: context.spacing(isSelected ? 20 : 16),
+                vertical: context.spacing(8),
+              ),
+              decoration: BoxDecoration(
+                color: isSelected
+                    ? color.withOpacity(0.2)
+                    : AppColors.cardBackground,
+                borderRadius: BorderRadius.circular(25),
+                border: Border.all(
+                  color: isSelected ? color : Colors.white.withOpacity(0.1),
+                  width: isSelected ? 2 : 1,
                 ),
               ),
-
-              /// HABIT LIST
-              Expanded(
-                child: ListView.separated(
-                  controller: _scrollController,
-                  scrollDirection: Axis.horizontal,
-                  physics: const BouncingScrollPhysics(),
-                  padding: EdgeInsets.zero,
-                  itemCount: widget.habits.length,
-                  separatorBuilder: (_, __) =>
-                      SizedBox(width: context.spacing(8)),
-                  itemBuilder: (context, index) {
-                    final habit = widget.habits[index];
-                    final isSelected = habit.id == widget.selectedHabitId;
-
-                    return GestureDetector(
-                      onTap: () => widget.onHabitSelected(habit.id),
-                      child: AnimatedContainer(
-                        duration: const Duration(milliseconds: 250),
-                        padding: EdgeInsets.symmetric(
-                          horizontal: context.spacing(14),
-                          vertical: context.spacing(8),
-                        ),
-                        decoration: BoxDecoration(
-                          color: isSelected
-                              ? Color(habit.colorCode)
-                              : AppColors.cardBackground,
-                          borderRadius: BorderRadius.circular(16),
-                          border: Border.all(
-                            color: isSelected
-                                ? Colors.transparent
-                                : Colors.white12,
-                          ),
-                        ),
-                        child: Center(
-                          child: Text(
-                            habit.name,
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontSize: context.fontSize(14),
-                              fontWeight: isSelected
-                                  ? FontWeight.w600
-                                  : FontWeight.normal,
-                            ),
-                          ),
-                        ),
-                      ),
-                    );
-                  },
-                ),
-              ),
-
-              /// RIGHT ARROW
-              AnimatedOpacity(
-                duration: const Duration(milliseconds: 200),
-                opacity: _canScrollRight ? 1 : 0.3,
-                child: IconButton(
-                  onPressed: _canScrollRight ? _scrollRight : null,
-                  icon: const Icon(
-                    Icons.arrow_forward_ios,
-                    size: 18,
-                    color: Colors.white,
-                  ),
-                ),
-              ),
-            ],
-          ),
-
-          /// LEFT GRADIENT EDGE
-          Positioned(
-            left: 40,
-            top: 0,
-            bottom: 0,
-            child: IgnorePointer(
-              child: Container(
-                width: 20,
-                decoration: const BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: [AppColors.background, Colors.transparent],
-                    begin: Alignment.centerLeft,
-                    end: Alignment.centerRight,
+              child: Center(
+                child: Text(
+                  habit.name,
+                  style: TextStyle(
+                    color: isSelected ? color : Colors.white,
+                    fontSize: context.fontSize(14),
+                    fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
                   ),
                 ),
               ),
             ),
-          ),
-
-          /// RIGHT GRADIENT EDGE
-          Positioned(
-            right: 40,
-            top: 0,
-            bottom: 0,
-            child: IgnorePointer(
-              child: Container(
-                width: 20,
-                decoration: const BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: [Colors.transparent, AppColors.background],
-                    begin: Alignment.centerLeft,
-                    end: Alignment.centerRight,
-                  ),
-                ),
-              ),
-            ),
-          ),
-        ],
+          );
+        },
       ),
     );
   }

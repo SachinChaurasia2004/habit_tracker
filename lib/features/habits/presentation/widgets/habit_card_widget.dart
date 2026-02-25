@@ -28,12 +28,13 @@ class HabitCardWidget extends StatelessWidget {
   bool get _isToday => DateHelper.isToday(date);
   bool get _isPast => date.isBefore(DateHelper.normalize(DateTime.now()));
   bool get _isFuture => date.isAfter(DateHelper.normalize(DateTime.now()));
+  String get _streakText => '$streak ${streak == 1 ? 'Day' : 'Days'} Streak';
 
   String get _statusText {
     if (_isFuture) return 'Upcoming';
-    if (_isPast) return isCompleted ? 'Completed' : 'Missed';
-    if (isCompleted) return 'Completed';
-    return '$streak Day Streak';
+    if (isCompleted) return _streakText;
+    if (_isPast) return 'Missed';
+    return _streakText;
   }
 
   @override
