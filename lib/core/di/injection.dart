@@ -3,6 +3,16 @@ import 'package:hive/hive.dart';
 import '../../features/habits/data/datasources/habit_local_datasource.dart';
 import '../../features/habits/data/models/habit_model.dart';
 import '../../features/habits/data/repositories/habit_repository_impl.dart';
+import '../../features/profile/data/datasources/profile_local_datasource.dart';
+import '../../features/profile/data/models/user_profile_model.dart';
+import '../../features/profile/data/repositories/profile_repository_impl.dart';
+import '../../features/profile/domain/repositories/profile_repository.dart';
+import '../../features/profile/domain/usecases/get_profile.dart';
+import '../../features/profile/domain/usecases/toggle_dark_mode.dart';
+import '../../features/profile/domain/usecases/toggle_notifications.dart';
+import '../../features/profile/domain/usecases/update_name.dart';
+import '../../features/profile/domain/usecases/update_profile.dart';
+import '../../features/profile/presentation/bloc/profile_bloc.dart';
 import '../../features/tracking/data/datasources/tracking_local_datasource.dart';
 import '../../features/tracking/data/models/habit_entry_model.dart';
 import '../../features/tracking/data/repositories/tracking_repository_impl.dart';
@@ -48,6 +58,12 @@ Future<void> setupDependencies() async {
     () => TrackingLocalDataSourceImpl(getIt()),
   );
 
+   getIt.registerLazySingleton<ProfileLocalDataSource>(
+    () => ProfileLocalDataSourceImpl(
+      Hive.box<UserProfileModel>('user_profile'),
+    ),
+  );
+
   // REPOSITORIES
   getIt.registerLazySingleton<HabitRepository>(
     () => HabitRepositoryImpl(localDataSource: getIt()),
@@ -56,6 +72,13 @@ Future<void> setupDependencies() async {
     () => TrackingRepositoryImpl(
       localDataSource: getIt(),
       habitRepository: getIt(),
+    ),
+  );
+
+  // Profile repository
+  getIt.registerLazySingleton<ProfileRepository>(
+    () => ProfileRepositoryImpl(
+      localDataSource: getIt(),
     ),
   );
 
@@ -102,6 +125,14 @@ Future<void> setupDependencies() async {
       trackingRepository: getIt(),
     ),
   );
+
+   getIt.registerLazySingleton(() => GetProfile(getIt()));
+    getIt.registerLazySingleton(() => UpdateProfile(getIt()));
+    getIt.registerLazySingleton(() => UpdateName(getIt()));
+    getIt.registerLazySingleton(() => ToggleNotifications(getIt()));
+    getIt.registerLazySingleton(() => ToggleDarkMode(getIt()));
+
+
   // BLOCS
   getIt.registerFactory(
     () => HabitBloc(
@@ -139,6 +170,17 @@ Future<void> setupDependencies() async {
       trackingRepository: getIt(),
     ),
   );
+
+   getIt.registerFactory(
+      () => ProfileBloc(
+        getProfile: getIt(),
+        updateProfile: getIt(),
+        updateName: getIt(),
+        toggleNotifications: getIt(),
+        toggleDarkMode: getIt(),
+        profileRepository: getIt(),
+      ),
+    );
 
 }
 

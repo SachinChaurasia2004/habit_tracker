@@ -7,6 +7,8 @@ import 'core/navigation/main_navigation.dart';
 import 'core/theme/app_theme.dart';
 import 'core/theme/app_colors.dart';
 import 'features/habits/presentation/bloc/habit_bloc.dart';
+import 'features/profile/presentation/bloc/profile_bloc.dart';
+import 'features/profile/presentation/bloc/profile_event.dart';
 import 'features/tracking/presentation/bloc/calendar_bloc.dart';
 import 'features/tracking/presentation/bloc/stats_bloc.dart';
 import 'features/tracking/presentation/bloc/tracking_bloc.dart';
@@ -46,6 +48,10 @@ class MyApp extends StatelessWidget {
         BlocProvider(create: (context) => getIt<TrackingBloc>()),
         BlocProvider(create: (context) => getIt<StatisticsBloc>()),
         BlocProvider(create: (context) => getIt<CalendarBloc>()),
+        BlocProvider(
+          create: (context) => getIt<ProfileBloc>()
+            ..add(const LoadProfileEvent()),  // Load profile on app start
+        ),
       ],
       child: MaterialApp(
         title: 'Habit Tracker',

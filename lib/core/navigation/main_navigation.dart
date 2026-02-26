@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../features/habits/presentation/pages/home_page.dart';
-import '../../features/habits/presentation/pages/profile_page.dart';
+import '../../features/profile/presentation/pages/profile_page.dart';
 import '../../features/habits/presentation/widgets/custom_fab.dart';
 import '../../features/habits/presentation/pages/add_habit_page.dart';
 import '../../features/tracking/presentation/pages/calendar_page.dart';
