@@ -28,7 +28,8 @@ class HabitCardWidget extends StatelessWidget {
   bool get _isToday => DateHelper.isToday(date);
   bool get _isPast => date.isBefore(DateHelper.normalize(DateTime.now()));
   bool get _isFuture => date.isAfter(DateHelper.normalize(DateTime.now()));
-  String get _streakText => '$streak ${streak == 1 ? 'Day' : 'Days'} Streak';
+  String get _streakText =>
+      '${streak > 0 ? '🔥 ' : ''}$streak ${streak == 1 ? 'Day' : 'Days'} Streak';
 
   String get _statusText {
     if (_isFuture) return 'Upcoming';
@@ -104,10 +105,6 @@ class HabitCardWidget extends StatelessWidget {
     );
   }
 }
-
-// ---------------------------------------------------------------------------
-// Sub-widgets
-// ---------------------------------------------------------------------------
 
 class _HabitIcon extends StatelessWidget {
   const _HabitIcon({

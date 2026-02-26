@@ -12,7 +12,9 @@ class OverviewSection extends StatelessWidget {
   Widget build(BuildContext context) {
     return GridView.count(
       shrinkWrap: true,
+      primary: false,
       physics: const NeverScrollableScrollPhysics(),
+      padding: EdgeInsets.zero,
       crossAxisCount: 2,
       mainAxisSpacing: context.spacing(12),
       crossAxisSpacing: context.spacing(12),

@@ -157,13 +157,13 @@ class _StatsPageState extends State<StatsPage> {
               child: ListView(
                 padding: EdgeInsets.all(context.pagePadding),
                 children: [
-                  OverviewSection(stats: state.overallStats),
-                  SizedBox(height: context.spacing(12)),
-                  TrendChart(weeklyStats: state.weeklyStats),
-                  SizedBox(height: context.spacing(24)),
                   HabitPerformanceSection(
                     performances: state.habitPerformances,
                   ),
+                  SizedBox(height: context.spacing(24)),
+                  TrendChart(weeklyStats: state.weeklyStats),
+                  SizedBox(height: context.spacing(24)),
+                  OverviewSection(stats: state.overallStats),
                   SizedBox(height: context.spacing(24)),
                   TopPerformersSection(performers: state.topPerformers),
                   SizedBox(height: context.spacing(24)),
