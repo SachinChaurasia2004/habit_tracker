@@ -27,6 +27,8 @@ class CreateHabit implements UseCase<Habit, CreateHabitParams> {
       colorCode: params.colorCode,
       createdAt: DateTime.now(),
       isActive: true,
+      reminderHour: params.reminderHour,
+      reminderMinute: params.reminderMinute,
     );
 
     return await repository.createHabit(habit);
@@ -39,11 +41,15 @@ class CreateHabitParams {
   final String name;
   final String iconName;
   final int colorCode;
+  final int? reminderHour;
+  final int? reminderMinute;
 
   const CreateHabitParams({
     required this.id,
     required this.name,
     required this.iconName,
     required this.colorCode,
+    this.reminderHour,
+    this.reminderMinute,
   });
 }

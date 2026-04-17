@@ -1,4 +1,5 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter/foundation.dart';
 import 'package:uuid/uuid.dart';
 import '../../domain/usecases/create_habit.dart';
 import '../../domain/usecases/get_all_habits.dart';
@@ -64,18 +65,29 @@ class HabitBloc extends Bloc<HabitEvent, HabitState> {
   ) async {
     emit(const HabitLoading());
 
+    debugPrint('[HabitBloc] Creating habit: ${event.name}');
+    debugPrint(
+      '[HabitBloc]   Reminder: ${event.reminderHour != null ? "${event.reminderHour}:${event.reminderMinute}" : "none"}',
+    );
+
     final result = await createHabit(
       CreateHabitParams(
         id: const Uuid().v4(),
         name: event.name,
         iconName: event.iconName,
         colorCode: event.colorCode,
+        reminderHour: event.reminderHour,
+        reminderMinute: event.reminderMinute,
       ),
     );
 
     result.fold(
-      (failure) => emit(HabitError(failure.message)),
+      (failure) {
+        debugPrint('[HabitBloc] Failed to create habit: ${failure.message}');
+        emit(HabitError(failure.message));
+      },
       (habit) {
+        debugPrint('[HabitBloc] Habit created successfully: ${habit.id}');
         emit(HabitCreated(habit));
         // Reload habits after creation
         add(const LoadActiveHabitsEvent());
@@ -96,17 +108,17 @@ class HabitBloc extends Bloc<HabitEvent, HabitState> {
         iconName: event.iconName,
         colorCode: event.colorCode,
         isActive: event.isActive,
+        reminderHour: event.reminderHour,
+        reminderMinute: event.reminderMinute,
+        clearReminder: event.clearReminder,
       ),
     );
 
-    result.fold(
-      (failure) => emit(HabitError(failure.message)),
-      (habit) {
-        emit(HabitUpdated(habit));
-        // Reload habits after update
-        add(const LoadActiveHabitsEvent());
-      },
-    );
+    result.fold((failure) => emit(HabitError(failure.message)), (habit) {
+      emit(HabitUpdated(habit));
+      // Reload habits after update
+      add(const LoadActiveHabitsEvent());
+    });
   }
 
   Future<void> _onDeleteHabit(
@@ -115,18 +127,13 @@ class HabitBloc extends Bloc<HabitEvent, HabitState> {
   ) async {
     emit(const HabitLoading());
 
-    final result = await deleteHabit(
-      DeleteHabitParams(habitId: event.habitId),
-    );
+    final result = await deleteHabit(DeleteHabitParams(habitId: event.habitId));
 
-    result.fold(
-      (failure) => emit(HabitError(failure.message)),
-      (_) {
-        emit(const HabitDeleted());
-        // Reload habits after deletion
-        add(const LoadActiveHabitsEvent());
-      },
-    );
+    result.fold((failure) => emit(HabitError(failure.message)), (_) {
+      emit(const HabitDeleted());
+      // Reload habits after deletion
+      add(const LoadActiveHabitsEvent());
+    });
   }
 
   Future<void> _onRefreshHabits(

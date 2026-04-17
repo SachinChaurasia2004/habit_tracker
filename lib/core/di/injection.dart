@@ -28,6 +28,7 @@ import '../../features/tracking/domain/usecases/get_overall_stats.dart';
 import '../../features/tracking/domain/usecases/get_weekly_stats.dart';
 import '../../features/tracking/domain/usecases/toggle_habit_completion.dart';
 import '../../features/tracking/domain/usecases/get_daily_entries.dart';
+import '../services/streak_notification_service.dart';
 import '../../features/tracking/domain/usecases/calculate_streak.dart';
 import '../../features/tracking/domain/usecases/get_daily_progress.dart';
 import '../../features/tracking/domain/usecases/get_entries_for_habit.dart';
@@ -58,10 +59,9 @@ Future<void> setupDependencies() async {
     () => TrackingLocalDataSourceImpl(getIt()),
   );
 
-   getIt.registerLazySingleton<ProfileLocalDataSource>(
-    () => ProfileLocalDataSourceImpl(
-      Hive.box<UserProfileModel>('user_profile'),
-    ),
+  getIt.registerLazySingleton<ProfileLocalDataSource>(
+    () =>
+        ProfileLocalDataSourceImpl(Hive.box<UserProfileModel>('user_profile')),
   );
 
   // REPOSITORIES
@@ -77,9 +77,7 @@ Future<void> setupDependencies() async {
 
   // Profile repository
   getIt.registerLazySingleton<ProfileRepository>(
-    () => ProfileRepositoryImpl(
-      localDataSource: getIt(),
-    ),
+    () => ProfileRepositoryImpl(localDataSource: getIt()),
   );
 
   // USE CASES - HABITS
@@ -121,17 +119,17 @@ Future<void> setupDependencies() async {
   );
 
   getIt.registerLazySingleton(
-    () => GetMonthlyCompletion(
-      trackingRepository: getIt(),
-    ),
+    () => GetMonthlyCompletion(trackingRepository: getIt()),
   );
 
-   getIt.registerLazySingleton(() => GetProfile(getIt()));
-    getIt.registerLazySingleton(() => UpdateProfile(getIt()));
-    getIt.registerLazySingleton(() => UpdateName(getIt()));
-    getIt.registerLazySingleton(() => ToggleNotifications(getIt()));
-    getIt.registerLazySingleton(() => ToggleDarkMode(getIt()));
+  getIt.registerLazySingleton(() => GetProfile(getIt()));
+  getIt.registerLazySingleton(() => UpdateProfile(getIt()));
+  getIt.registerLazySingleton(() => UpdateName(getIt()));
+  getIt.registerLazySingleton(() => ToggleNotifications(getIt()));
+  getIt.registerLazySingleton(() => ToggleDarkMode(getIt()));
 
+  // ========== SERVICES ==========
+  getIt.registerLazySingleton(() => StreakNotificationService());
 
   // BLOCS
   getIt.registerFactory(
@@ -151,10 +149,11 @@ Future<void> setupDependencies() async {
       calculateStreak: getIt(),
       getDailyProgress: getIt(),
       getActiveHabits: getIt(),
+      streakNotificationService: getIt(),
     ),
   );
 
-   // ========== BLOCS - STATISTICS ==========
+  // ========== BLOCS - STATISTICS ==========
   getIt.registerFactory(
     () => StatisticsBloc(
       getOverallStatistics: getIt(),
@@ -171,17 +170,16 @@ Future<void> setupDependencies() async {
     ),
   );
 
-   getIt.registerFactory(
-      () => ProfileBloc(
-        getProfile: getIt(),
-        updateProfile: getIt(),
-        updateName: getIt(),
-        toggleNotifications: getIt(),
-        toggleDarkMode: getIt(),
-        profileRepository: getIt(),
-      ),
-    );
-
+  getIt.registerFactory(
+    () => ProfileBloc(
+      getProfile: getIt(),
+      updateProfile: getIt(),
+      updateName: getIt(),
+      toggleNotifications: getIt(),
+      toggleDarkMode: getIt(),
+      profileRepository: getIt(),
+    ),
+  );
 }
 
 /// Reset all dependencies (for testing)

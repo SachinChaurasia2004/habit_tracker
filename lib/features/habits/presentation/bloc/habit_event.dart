@@ -22,15 +22,25 @@ class CreateHabitEvent extends HabitEvent {
   final String name;
   final String iconName;
   final int colorCode;
+  final int? reminderHour;
+  final int? reminderMinute;
 
   const CreateHabitEvent({
     required this.name,
     required this.iconName,
     required this.colorCode,
+    this.reminderHour,
+    this.reminderMinute,
   });
 
   @override
-  List<Object?> get props => [name, iconName, colorCode];
+  List<Object?> get props => [
+        name,
+        iconName,
+        colorCode,
+        reminderHour,
+        reminderMinute,
+      ];
 }
 
 /// Update an existing habit
@@ -40,6 +50,9 @@ class UpdateHabitEvent extends HabitEvent {
   final String? iconName;
   final int? colorCode;
   final bool? isActive;
+  final int? reminderHour;
+  final int? reminderMinute;
+  final bool clearReminder;
 
   const UpdateHabitEvent({
     required this.habitId,
@@ -47,10 +60,22 @@ class UpdateHabitEvent extends HabitEvent {
     this.iconName,
     this.colorCode,
     this.isActive,
+    this.reminderHour,
+    this.reminderMinute,
+    this.clearReminder = false,
   });
 
   @override
-  List<Object?> get props => [habitId, name, iconName, colorCode, isActive];
+  List<Object?> get props => [
+        habitId,
+        name,
+        iconName,
+        colorCode,
+        isActive,
+        reminderHour,
+        reminderMinute,
+        clearReminder,
+      ];
 }
 
 /// Delete a habit

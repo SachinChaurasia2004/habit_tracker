@@ -23,13 +23,15 @@ class HabitModelAdapter extends TypeAdapter<HabitModel> {
       colorCode: fields[3] as int,
       createdAt: fields[4] as DateTime,
       isActive: fields[5] as bool,
+      reminderHour: fields[6] as int?,
+      reminderMinute: fields[7] as int?,
     );
   }
 
   @override
   void write(BinaryWriter writer, HabitModel obj) {
     writer
-      ..writeByte(6)
+      ..writeByte(8)
       ..writeByte(0)
       ..write(obj.id)
       ..writeByte(1)
@@ -41,7 +43,11 @@ class HabitModelAdapter extends TypeAdapter<HabitModel> {
       ..writeByte(4)
       ..write(obj.createdAt)
       ..writeByte(5)
-      ..write(obj.isActive);
+      ..write(obj.isActive)
+      ..writeByte(6)
+      ..write(obj.reminderHour)
+      ..writeByte(7)
+      ..write(obj.reminderMinute);
   }
 
   @override

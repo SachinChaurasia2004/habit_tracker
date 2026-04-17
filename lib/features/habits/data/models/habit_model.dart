@@ -29,6 +29,14 @@ class HabitModel extends Habit {
   @HiveField(5)
   final bool isActive;
 
+  @override
+  @HiveField(6)
+  final int? reminderHour;
+
+  @override
+  @HiveField(7)
+  final int? reminderMinute;
+
   const HabitModel({
     required this.id,
     required this.name,
@@ -36,6 +44,8 @@ class HabitModel extends Habit {
     required this.colorCode,
     required this.createdAt,
     this.isActive = true,
+    this.reminderHour,
+    this.reminderMinute,
   }) : super(
           id: id,
           name: name,
@@ -43,6 +53,8 @@ class HabitModel extends Habit {
           colorCode: colorCode,
           createdAt: createdAt,
           isActive: isActive,
+          reminderHour: reminderHour,
+          reminderMinute: reminderMinute,
         );
 
   /// Convert Entity to Model (for saving to Hive)
@@ -54,6 +66,8 @@ class HabitModel extends Habit {
       colorCode: habit.colorCode,
       createdAt: habit.createdAt,
       isActive: habit.isActive,
+      reminderHour: habit.reminderHour,
+      reminderMinute: habit.reminderMinute,
     );
   }
 
@@ -66,6 +80,8 @@ class HabitModel extends Habit {
       colorCode: colorCode,
       createdAt: createdAt,
       isActive: isActive,
+      reminderHour: reminderHour,
+      reminderMinute: reminderMinute,
     );
   }
 
@@ -78,6 +94,8 @@ class HabitModel extends Habit {
       'colorCode': colorCode,
       'createdAt': createdAt.toIso8601String(),
       'isActive': isActive,
+      'reminderHour': reminderHour,
+      'reminderMinute': reminderMinute,
     };
   }
 
@@ -90,6 +108,8 @@ class HabitModel extends Habit {
       colorCode: json['colorCode'] as int,
       createdAt: DateTime.parse(json['createdAt'] as String),
       isActive: json['isActive'] as bool? ?? true,
+      reminderHour: json['reminderHour'] as int?,
+      reminderMinute: json['reminderMinute'] as int?,
     );
   }
 
@@ -102,6 +122,9 @@ class HabitModel extends Habit {
     int? colorCode,
     DateTime? createdAt,
     bool? isActive,
+    int? reminderHour,
+    int? reminderMinute,
+    bool clearReminder = false,
   }) {
     return HabitModel(
       id: id ?? this.id,
@@ -110,6 +133,9 @@ class HabitModel extends Habit {
       colorCode: colorCode ?? this.colorCode,
       createdAt: createdAt ?? this.createdAt,
       isActive: isActive ?? this.isActive,
+      reminderHour: clearReminder ? null : reminderHour ?? this.reminderHour,
+      reminderMinute:
+          clearReminder ? null : reminderMinute ?? this.reminderMinute,
     );
   }
 }

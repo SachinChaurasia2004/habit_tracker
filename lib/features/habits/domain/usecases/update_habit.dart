@@ -31,6 +31,9 @@ class UpdateHabit implements UseCase<Habit, UpdateHabitParams> {
         iconName: params.iconName ?? existingHabit.iconName,
         colorCode: params.colorCode ?? existingHabit.colorCode,
         isActive: params.isActive ?? existingHabit.isActive,
+        reminderHour: params.reminderHour,
+        reminderMinute: params.reminderMinute,
+        clearReminder: params.clearReminder,
       );
 
       return await repository.updateHabit(updatedHabit);
@@ -45,6 +48,9 @@ class UpdateHabitParams {
   final String? iconName;
   final int? colorCode;
   final bool? isActive;
+  final int? reminderHour;
+  final int? reminderMinute;
+  final bool clearReminder;
 
   const UpdateHabitParams({
     required this.habitId,
@@ -52,5 +58,8 @@ class UpdateHabitParams {
     this.iconName,
     this.colorCode,
     this.isActive,
+    this.reminderHour,
+    this.reminderMinute,
+    this.clearReminder = false,
   });
 }
