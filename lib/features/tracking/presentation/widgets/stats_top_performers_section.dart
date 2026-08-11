@@ -63,7 +63,7 @@ class _TopPerformerItem extends StatelessWidget {
             width: 32,
             height: 32,
             decoration: BoxDecoration(
-              color: Color(performance.colorCode).withOpacity(0.2),
+              color: Color(performance.colorCode).withValues(alpha: 0.2),
               shape: BoxShape.circle,
             ),
             child: Center(

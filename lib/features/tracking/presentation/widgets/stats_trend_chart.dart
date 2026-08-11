@@ -127,7 +127,7 @@ class TrendChart extends StatelessWidget {
                   horizontalInterval: 1,
                   getDrawingHorizontalLine: (value) {
                     return FlLine(
-                      color: AppColors.surfaceVariant.withOpacity(0.3),
+                      color: AppColors.surfaceVariant.withValues(alpha: 0.3),
                       strokeWidth: 1,
                     );
                   },
@@ -162,7 +162,7 @@ class TrendChart extends StatelessWidget {
               topRight: Radius.circular(6),
             ),
             gradient: LinearGradient(
-              colors: [color, color.withOpacity(0.7)],
+              colors: [color, color.withValues(alpha: 0.7)],
               begin: Alignment.topCenter,
               end: Alignment.bottomCenter,
             ),

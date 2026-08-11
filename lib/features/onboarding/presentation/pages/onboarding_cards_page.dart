@@ -133,17 +133,17 @@ class _OnboardingCardsPageState extends State<OnboardingCardsPage> {
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
               colors: [
-                page.primaryColor.withOpacity(0.3),
-                page.secondaryColor.withOpacity(0.1),
+                page.primaryColor.withValues(alpha: 0.3),
+                page.secondaryColor.withValues(alpha: 0.1),
               ],
             ),
             border: Border.all(
-              color: page.primaryColor.withOpacity(0.3),
+              color: page.primaryColor.withValues(alpha: 0.3),
               width: 2,
             ),
             boxShadow: [
               BoxShadow(
-                color: page.primaryColor.withOpacity(0.2),
+                color: page.primaryColor.withValues(alpha: 0.2),
                 blurRadius: 40,
                 offset: const Offset(0, 20),
               ),
@@ -157,7 +157,7 @@ class _OnboardingCardsPageState extends State<OnboardingCardsPage> {
                 Positioned.fill(
                   child: CustomPaint(
                     painter: _PatternPainter(
-                      color: page.primaryColor.withOpacity(0.05),
+                      color: page.primaryColor.withValues(alpha: 0.05),
                     ),
                   ),
                 ),
@@ -195,7 +195,7 @@ class _OnboardingCardsPageState extends State<OnboardingCardsPage> {
                         textAlign: TextAlign.center,
                         style: TextStyle(
                           fontSize: context.fontSize(16),
-                          color: Colors.white.withOpacity(0.7),
+                          color: Colors.white.withValues(alpha: 0.7),
                           height: 1.6,
                         ),
                       ),
@@ -230,7 +230,7 @@ class _OnboardingCardsPageState extends State<OnboardingCardsPage> {
                   borderRadius: BorderRadius.circular(4),
                   color: index == _currentPage
                       ? OnboardingContent.pages[_currentPage].primaryColor
-                      : Colors.white.withOpacity(0.3),
+                      : Colors.white.withValues(alpha: 0.3),
                 ),
               ),
             ),

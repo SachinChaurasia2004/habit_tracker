@@ -84,7 +84,7 @@ class _CalendarHabitSelectorState extends State<CalendarHabitSelector> {
         physics: const BouncingScrollPhysics(),
         padding: EdgeInsets.symmetric(horizontal: context.pagePadding),
         itemCount: widget.habits.length,
-        separatorBuilder: (_, __) => SizedBox(width: context.spacing(8)),
+        separatorBuilder: (_, _) => SizedBox(width: context.spacing(8)),
         itemBuilder: (context, index) {
           final habit = widget.habits[index];
           final isSelected = habit.id == widget.selectedHabitId;
@@ -101,11 +101,11 @@ class _CalendarHabitSelectorState extends State<CalendarHabitSelector> {
               ),
               decoration: BoxDecoration(
                 color: isSelected
-                    ? color.withOpacity(0.2)
+                    ? color.withValues(alpha: 0.2)
                     : AppColors.cardBackground,
                 borderRadius: BorderRadius.circular(25),
                 border: Border.all(
-                  color: isSelected ? color : Colors.white.withOpacity(0.1),
+                  color: isSelected ? color : Colors.white.withValues(alpha: 0.1),
                   width: isSelected ? 2 : 1,
                 ),
               ),

@@ -164,7 +164,7 @@ class _DateSelectorWidgetState extends State<DateSelectorWidget> {
           vertical: context.spacing(8),
         ),
         itemCount: _dates.length,
-        separatorBuilder: (_, __) => SizedBox(width: itemSpacing),
+        separatorBuilder: (_, _) => SizedBox(width: itemSpacing),
         itemBuilder: (_, index) => _DateItem(
           date: _dates[index],
           width: itemWidth,

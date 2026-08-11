@@ -63,7 +63,7 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
 
     result.fold(
       (failure) {
-        emit(ProfileError(failure.message));
+        emit(ProfileError(failure.message, profile: currentState.profile));
         // Restore previous state
         emit(currentState);
       },
@@ -80,15 +80,18 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
 
     emit(ProfileUpdating(currentState.profile));
 
-    final result = await updateName(event.name);
+    final trimmedName = event.name.trim();
+    if (trimmedName.isEmpty) return;
+
+    final result = await updateName(trimmedName);
 
     result.fold(
       (failure) {
-        emit(ProfileError(failure.message));
+        emit(ProfileError(failure.message, profile: currentState.profile));
         emit(currentState);
       },
       (_) {
-        final updatedProfile = currentState.profile.copyWith(name: event.name);
+        final updatedProfile = currentState.profile.copyWith(name: trimmedName);
         emit(ProfileLoaded(updatedProfile));
       },
     );
@@ -107,7 +110,7 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
 
     result.fold(
       (failure) {
-        emit(ProfileError(failure.message));
+        emit(ProfileError(failure.message, profile: currentState.profile));
         emit(currentState);
       },
       (_) {
@@ -132,7 +135,7 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
 
     result.fold(
       (failure) {
-        emit(ProfileError(failure.message));
+        emit(ProfileError(failure.message, profile: currentState.profile));
         emit(currentState);
       },
       (_) {
@@ -157,7 +160,7 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
 
     result.fold(
       (failure) {
-        emit(ProfileError(failure.message));
+        emit(ProfileError(failure.message, profile: currentState.profile));
         emit(currentState);
       },
       (_) {

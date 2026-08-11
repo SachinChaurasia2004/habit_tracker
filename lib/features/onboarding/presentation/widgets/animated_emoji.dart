@@ -78,8 +78,8 @@ class _AnimatedEmojiState extends State<AnimatedEmoji>
                 shape: BoxShape.circle,
                 gradient: RadialGradient(
                   colors: [
-                    widget.color.withOpacity(0.15),
-                    widget.color.withOpacity(0.0),
+                    widget.color.withValues(alpha: 0.15),
+                    widget.color.withValues(alpha: 0.0),
                   ],
                 ),
               ),

@@ -270,7 +270,7 @@ class NotificationService {
         id: id,
         title: title,
         body: body,
-        scheduledDate: tz.TZDateTime.from(scheduledTime, tz.local),
+        scheduledDate: tzScheduledTime,
         notificationDetails: notificationDetails,
         androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
         payload: payload,

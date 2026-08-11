@@ -171,7 +171,7 @@ class CalendarView extends StatelessWidget {
             '${day.day}',
             style: TextStyle(
               color: isOutside
-                  ? AppColors.textSecondary.withOpacity(0.3)
+                  ? AppColors.textSecondary.withValues(alpha: 0.3)
                   : isSelected || (completionRate > 75)
                   ? Colors.white
                   : Colors.white70,
@@ -189,11 +189,11 @@ class CalendarView extends StatelessWidget {
     if (completionRate >= 80) {
       return baseColor;
     } else if (completionRate >= 60) {
-      return baseColor.withOpacity(0.7);
+      return baseColor.withValues(alpha: 0.7);
     } else if (completionRate >= 40) {
-      return baseColor.withOpacity(0.5);
+      return baseColor.withValues(alpha: 0.5);
     } else if (completionRate >= 20) {
-      return baseColor.withOpacity(0.3);
+      return baseColor.withValues(alpha: 0.3);
     } else {
       return AppColors.surfaceVariant;
     }

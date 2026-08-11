@@ -1,10 +1,15 @@
 ﻿import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:math' as math;
+import '../../../../core/di/injection.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/utils/responsive.dart';
 import '../../../../core/navigation/main_navigation.dart';
+import '../../../profile/domain/repositories/profile_repository.dart';
+import '../../../profile/presentation/bloc/profile_bloc.dart';
+import '../../../profile/presentation/bloc/profile_event.dart';
 import '../../data/onboarding_content.dart';
 import '../../data/models/onboarding_page_model.dart';
 import '../widgets/onboarding_indicator.dart';
@@ -22,12 +27,14 @@ class _OnboardingPageState extends State<OnboardingPage>
     with TickerProviderStateMixin {
   late PageController _pageController;
   late AnimationController _animationController;
+  late TextEditingController _nameController;
   int _currentPage = 0;
 
   @override
   void initState() {
     super.initState();
     _pageController = PageController();
+    _nameController = TextEditingController();
     _animationController = AnimationController(
       duration: const Duration(milliseconds: 300),
       vsync: this,
@@ -45,6 +52,7 @@ class _OnboardingPageState extends State<OnboardingPage>
   void dispose() {
     _pageController.dispose();
     _animationController.dispose();
+    _nameController.dispose();
     super.dispose();
   }
 
@@ -67,22 +75,46 @@ class _OnboardingPageState extends State<OnboardingPage>
   }
 
   void _skipOnboarding() {
-    _finishOnboarding();
+    _pageController.animateToPage(
+      OnboardingContent.pages.length - 1,
+      duration: const Duration(milliseconds: 400),
+      curve: Curves.easeInOut,
+    );
   }
 
   void _finishOnboarding() async {
-  // Save that onboarding is complete
-  final prefs = await SharedPreferences.getInstance();
-  await prefs.setBool('onboarding_complete', true);
+    final name = _nameController.text.trim();
+    if (name.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please enter your name to continue.')),
+      );
+      return;
+    }
 
-  if (!mounted) return;
+    final saveResult = await getIt<ProfileRepository>().updateName(name);
+    if (!mounted) return;
 
-  Navigator.of(context).pushReplacement(
-    MaterialPageRoute(
-      builder: (context) => const MainNavigation(),
-    ),
-  );
-}
+    final saveFailed = saveResult.fold((_) => true, (_) => false);
+    if (saveFailed) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Could not save your name. Please try again.')),
+      );
+      return;
+    }
+
+    context.read<ProfileBloc>().add(const LoadProfileEvent());
+
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool('onboarding_complete', true);
+
+    if (!mounted) return;
+
+    Navigator.of(context).pushReplacement(
+      MaterialPageRoute(
+        builder: (context) => const MainNavigation(),
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -101,7 +133,7 @@ class _OnboardingPageState extends State<OnboardingPage>
                 center: Alignment.topRight,
                 radius: 1.5,
                 colors: [
-                  currentPageData.primaryColor.withOpacity(0.15),
+                  currentPageData.primaryColor.withValues(alpha: 0.15),
                   AppColors.background,
                   AppColors.background,
                 ],
@@ -128,7 +160,10 @@ class _OnboardingPageState extends State<OnboardingPage>
                     onPageChanged: _onPageChanged,
                     itemCount: OnboardingContent.pages.length,
                     itemBuilder: (context, index) {
-                      return _buildPage(OnboardingContent.pages[index]);
+                      return _buildPage(
+                        OnboardingContent.pages[index],
+                        isLastPage: index == OnboardingContent.pages.length - 1,
+                      );
                     },
                   ),
                 ),
@@ -154,7 +189,7 @@ class _OnboardingPageState extends State<OnboardingPage>
             child: Text(
               'Skip',
               style: TextStyle(
-                color: Colors.white.withOpacity(0.7),
+                color: Colors.white.withValues(alpha: 0.7),
                 fontSize: 16,
                 fontWeight: FontWeight.w600,
               ),
@@ -165,49 +200,83 @@ class _OnboardingPageState extends State<OnboardingPage>
     );
   }
 
-  Widget _buildPage(OnboardingPageModel pageData) {
-    return Padding(
-      padding: EdgeInsets.symmetric(horizontal: context.pagePadding),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          const Spacer(),
+  Widget _buildPage(
+    OnboardingPageModel pageData, {
+    required bool isLastPage,
+  }) {
+    return LayoutBuilder(
+      builder: (context, constraints) => SingleChildScrollView(
+        keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
+        padding: EdgeInsets.only(
+          left: context.pagePadding,
+          right: context.pagePadding,
+          bottom: MediaQuery.viewInsetsOf(context).bottom + context.spacing(24),
+        ),
+        child: ConstrainedBox(
+          constraints: BoxConstraints(minHeight: constraints.maxHeight),
+          child: Center(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
 
-          // Animated emoji
-          AnimatedEmoji(
-            emoji: pageData.image,
-            color: pageData.primaryColor,
-          ),
+                // Animated emoji
+                AnimatedEmoji(
+                  emoji: pageData.image,
+                  color: pageData.primaryColor,
+                ),
 
-          SizedBox(height: context.spacing(60)),
+                SizedBox(height: context.spacing(60)),
 
-          // Title
-          Text(
-            pageData.title,
-            textAlign: TextAlign.center,
-            style: TextStyle(
-              fontSize: context.fontSize(32),
-              fontWeight: FontWeight.bold,
-              color: Colors.white,
-              height: 1.2,
+                // Title
+                Text(
+                  pageData.title,
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontSize: context.fontSize(32),
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                    height: 1.2,
+                  ),
+                ),
+
+                SizedBox(height: context.spacing(24)),
+
+                // Description
+                Text(
+                  pageData.description,
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontSize: context.fontSize(16),
+                    color: Colors.white.withValues(alpha: 0.7),
+                    height: 1.6,
+                  ),
+                ),
+
+                if (isLastPage) ...[
+                  SizedBox(height: context.spacing(32)),
+                  TextField(
+                    controller: _nameController,
+                    autofocus: true,
+                    textCapitalization: TextCapitalization.words,
+                    textInputAction: TextInputAction.done,
+                    onSubmitted: (_) => _finishOnboarding(),
+                    style: const TextStyle(color: Colors.white),
+                    decoration: InputDecoration(
+                      labelText: 'Your name',
+                      hintText: 'Enter your name',
+                      prefixIcon: const Icon(Icons.person_outline),
+                      filled: true,
+                      fillColor: Colors.white.withValues(alpha: 0.08),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                    ),
+                  ),
+                ],
+              ],
             ),
           ),
-
-          SizedBox(height: context.spacing(24)),
-
-          // Description
-          Text(
-            pageData.description,
-            textAlign: TextAlign.center,
-            style: TextStyle(
-              fontSize: context.fontSize(16),
-              color: Colors.white.withOpacity(0.7),
-              height: 1.6,
-            ),
-          ),
-
-          const Spacer(),
-        ],
+        ),
       ),
     );
   }
@@ -343,8 +412,8 @@ class _FloatingParticleState extends State<_FloatingParticle>
                 shape: BoxShape.circle,
                 gradient: RadialGradient(
                   colors: [
-                    widget.color.withOpacity(0.3),
-                    widget.color.withOpacity(0.0),
+                    widget.color.withValues(alpha: 0.3),
+                    widget.color.withValues(alpha: 0.0),
                   ],
                 ),
               ),

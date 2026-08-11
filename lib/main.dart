@@ -13,6 +13,7 @@ import 'features/habits/presentation/bloc/habit_bloc.dart';
 import 'features/onboarding/presentation/pages/onboarding_page.dart';
 import 'features/profile/presentation/bloc/profile_bloc.dart';
 import 'features/profile/presentation/bloc/profile_event.dart';
+import 'features/profile/presentation/bloc/profile_state.dart';
 import 'features/tracking/presentation/bloc/calendar_bloc.dart';
 import 'features/tracking/presentation/bloc/stats_bloc.dart';
 import 'features/tracking/presentation/bloc/tracking_bloc.dart';
@@ -75,13 +76,25 @@ class MyApp extends StatelessWidget {
                 ..add(const LoadProfileEvent()), // Load profile on app start
         ),
       ],
-      child: MaterialApp(
-        title: 'Habit Tracker',
-        debugShowCheckedModeBanner: false,
-        theme: AppTheme.darkTheme,
-        home: showOnboarding
-            ? const OnboardingPage() // Show onboarding first time
-            : const NotificationPermissionGate(child: MainNavigation()),
+      child: BlocBuilder<ProfileBloc, ProfileState>(
+        builder: (context, state) {
+          final darkModeEnabled = switch (state) {
+            ProfileLoaded loaded => loaded.profile.darkModeEnabled,
+            ProfileUpdating updating => updating.profile.darkModeEnabled,
+            _ => true,
+          };
+
+          return MaterialApp(
+            title: 'Habitus',
+            debugShowCheckedModeBanner: false,
+            theme: AppTheme.lightTheme,
+            darkTheme: AppTheme.darkTheme,
+            themeMode: darkModeEnabled ? ThemeMode.dark : ThemeMode.light,
+            home: showOnboarding
+                ? const OnboardingPage()
+                : const NotificationPermissionGate(child: MainNavigation()),
+          );
+        },
       ),
     );
   }

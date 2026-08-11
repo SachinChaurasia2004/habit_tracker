@@ -62,7 +62,7 @@ class _AddHabitPageState extends State<AddHabitPage> {
   }
 
   int _indexOfColor(int colorCode) {
-    final index = AppColors.habitColors.indexWhere((c) => c.value == colorCode);
+    final index = AppColors.habitColors.indexWhere((c) => c.toARGB32() == colorCode);
     return index == -1 ? 0 : index;
   }
 
@@ -70,7 +70,7 @@ class _AddHabitPageState extends State<AddHabitPage> {
     if (!_formKey.currentState!.validate()) return;
 
     final name = _nameController.text.trim();
-    final colorCode = _selectedColor.value;
+    final colorCode = _selectedColor.toARGB32();
     final reminderHour = _selectedReminderTime?.hour;
     final reminderMinute = _selectedReminderTime?.minute;
 

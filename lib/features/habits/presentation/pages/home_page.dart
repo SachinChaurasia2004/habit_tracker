@@ -10,6 +10,8 @@ import '../../../tracking/presentation/bloc/stats_bloc.dart';
 import '../../../tracking/presentation/bloc/stats_event.dart';
 import '../../../tracking/presentation/bloc/tracking_bloc.dart';
 import '../../../tracking/presentation/bloc/tracking_event.dart';
+import '../../../profile/presentation/bloc/profile_bloc.dart';
+import '../../../profile/presentation/bloc/profile_state.dart';
 import '../bloc/habit_bloc.dart';
 import '../bloc/habit_event.dart';
 import '../bloc/habit_state.dart';
@@ -79,9 +81,16 @@ class _HomePageState extends State<HomePage> {
                 child: CustomScrollView(
                   slivers: [
                     SliverToBoxAdapter(
-                      child: HomeHeader(
-                        username:
-                            'Sachin', // TODO: Replace with dynamic user name
+                      child: BlocBuilder<ProfileBloc, ProfileState>(
+                        builder: (context, state) {
+                          final username = switch (state) {
+                            ProfileLoaded loaded => loaded.profile.name,
+                            ProfileUpdating updating => updating.profile.name,
+                            _ => 'there',
+                          };
+
+                          return HomeHeader(username: username);
+                        },
                       ),
                     ),
                     SliverToBoxAdapter(
